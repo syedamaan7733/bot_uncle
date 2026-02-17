@@ -139,7 +139,7 @@ function StorePage() {
         let message = "";
 
         if (lang === "hi") {
-            message = `नमस्ते, मैं इस प्रोडक्ट के बारे में जानकारी चाहता हूँ।\n${t.articleLabel}: ${item.name}\n${t.categoryLabel}: ${categoryId}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}`;
+            message = `नमस्ते, मैं इस प्रोडक्ट के बारे में जानकारी चाहता हूँ।\n${t.articleLabel}: ${item.name}\n${t.categoryLabel}: ${item.category.name}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}`;
         } else {
             message = `Hello, I am interested in this product:\nArticle: ${item.name}\nCategory: ${categoryId}\nImage: ${item.imageUrls?.[0] || 'N/A'}`;
         }
