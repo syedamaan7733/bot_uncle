@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../services/api';
-import { Spin, Result, Button, Select, Checkbox, Tooltip, Typography } from 'antd';
+import { Spin, Result, Button, Select, Checkbox, Tooltip, Typography, Input, Upload } from 'antd';
 import { WhatsAppOutlined, GlobalOutlined, AppstoreOutlined, AppstoreFilled } from '@ant-design/icons';
 import BusinessBranding from '../../components/branding/BusinessBranding';
 import { ProductCard } from '../../components/products/ProductCard';
@@ -53,12 +53,13 @@ export const Route = createFileRoute('/store/$businessSlug')({
     },
     validateSearch: (search) => ({
         categoryId: search.categoryId as string | undefined,
+        search: search.search as string | undefined,
     }),
 });
 
 function StorePage() {
     const { businessSlug } = Route.useParams();
-    const { categoryId } = Route.useSearch();
+    const { categoryId, search } = Route.useSearch();
     const navigate = Route.useNavigate();
 
     // States
@@ -89,10 +90,11 @@ function StorePage() {
 
     // Fetch products
     const { data: products, isLoading: loadingProducts } = useQuery({
-        queryKey: ['store', businessSlug, 'products', categoryId],
+        queryKey: ['store', businessSlug, 'products', categoryId, search],
         queryFn: async () => {
             const params: any = {};
             if (categoryId) params.categoryId = categoryId;
+            if (search) params.search = search;
             const res = await api.get(`/store/${businessSlug}/products`, { params });
             return res.data;
         },
@@ -107,11 +109,11 @@ function StorePage() {
         if (categories && categories.length > 0 && !categoryId) {
             // Set first category as default in URL
             navigate({
-                search: { categoryId: categories[0].id },
+                search: { categoryId: categories[0].id, search },
                 replace: true
             });
         }
-    }, [categories, categoryId, navigate]);
+    }, [categories, categoryId, navigate, search]);
 
     // Functions
     const toggleItemSelection = (item: any) => {
@@ -125,9 +127,44 @@ function StorePage() {
 
     const handleCategoryChange = (value: string) => {
         navigate({
-            search: { categoryId: value },
+            search: { categoryId: value, search },
             replace: true
         });
+    };
+
+    const handleSearchChange = (value: string) => {
+        if (value.trim()) {
+            navigate({
+                search: { categoryId, search: value.trim() },
+                replace: true
+            });
+        } else {
+            navigate({
+                search: { categoryId, search: undefined },
+                replace: true
+            });
+        }
+    };
+
+    const handleImageSearch = async (file: File) => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await api.post(`/store/${businessSlug}/image-search`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const { searchText } = res.data;
+            navigate({
+                search: { categoryId, search: searchText },
+                replace: true
+            });
+        } catch (error) {
+            console.error('Image search failed:', error);
+        }
     };
 
     const toggleLanguage = () => {
@@ -282,14 +319,42 @@ function StorePage() {
                             ))}
                         </Select>
                     </div>
+
+                    {/* Search Input */}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '400px' }}>
+                        <Input
+                            placeholder="Search products..."
+                            value={search || ''}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            style={{ flex: 1 }}
+                            allowClear
+                        />
+                        <Upload
+                            accept="image/*"
+                            showUploadList={false}
+                            beforeUpload={(file) => {
+                                handleImageSearch(file);
+                                return false; // Prevent default upload behavior
+                            }}
+                        >
+                            <Button icon={<span>📷</span>} title="Search by image" />
+                        </Upload>
+                    </div>
                 </div>
 
                 {/* Selected Category Status */}
-                {categoryId && (
+                {(categoryId || search) && (
                     <div style={{ marginBottom: '24px' }}>
-                        <Typography.Text style={{ fontSize: '16px', color: 'rgba(128, 0, 0, 0.7)', fontWeight: 500 }}>
-                            {t.showingResults} <span style={{ color: '#800000', fontWeight: 'bold' }}>{toTitleCase(categories?.find((c: any) => c.id === categoryId)?.name)}</span>
-                        </Typography.Text>
+                        {categoryId && (
+                            <Typography.Text style={{ fontSize: '16px', color: 'rgba(128, 0, 0, 0.7)', fontWeight: 500, marginRight: search ? '16px' : 0 }}>
+                                {t.showingResults} <span style={{ color: '#800000', fontWeight: 'bold' }}>{toTitleCase(categories?.find((c: any) => c.id === categoryId)?.name)}</span>
+                            </Typography.Text>
+                        )}
+                        {search && (
+                            <Typography.Text style={{ fontSize: '16px', color: 'rgba(128, 0, 0, 0.7)', fontWeight: 500 }}>
+                                Search results for: <span style={{ color: '#800000', fontWeight: 'bold' }}>{search}</span>
+                            </Typography.Text>
+                        )}
                     </div>
                 )}
 

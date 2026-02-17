@@ -83,7 +83,7 @@ model Product {
 model ProductEmbedding {
   id         String   @id @default(uuid())
   productId  String   @unique @map("product_id")
-  embedding  Unsupported("vector(1536)")?
+  embedding  Unsupported("vector(3072)")?
   sourceText String   @map("source_text") @db.Text
   createdAt  DateTime @default(now()) @map("created_at")
 

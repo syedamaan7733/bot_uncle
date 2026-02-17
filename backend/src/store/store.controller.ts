@@ -1,4 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { StoreService } from './store.service';
 
 // Note: This controller is public, so no @UseGuards(JwtAuthGuard)
@@ -23,5 +25,26 @@ export class StoreController {
         @Query('search') search?: string,
     ) {
         return this.storeService.getProducts(slug, categoryId, search);
+    }
+
+    @Post(':slug/image-search')
+    @UseInterceptors(FileInterceptor('image', {
+        storage: multer.memoryStorage(),
+        limits: {
+            fileSize: 5 * 1024 * 1024, // 5MB limit
+        },
+        fileFilter: (req, file, callback) => {
+            if (!file.mimetype.startsWith('image/')) {
+                return callback(new Error('Only image files are allowed'), false);
+            }
+            callback(null, true);
+        },
+    }))
+    async searchByImage(
+        @Param('slug') slug: string,
+        @UploadedFile() file: Express.Multer.File,
+        @Query('categoryId') categoryId?: string,
+    ) {
+        return this.storeService.searchByImage(slug, file, categoryId);
     }
 }
