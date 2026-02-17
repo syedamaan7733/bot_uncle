@@ -18,4 +18,13 @@ export const businessService = {
         const response = await api.patch('/business/me', data);
         return response.data;
     },
+
+    uploadLogo: async (formData: FormData) => {
+        const response = await api.post('/business/me/logo', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
 };

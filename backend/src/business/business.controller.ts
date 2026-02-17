@@ -1,4 +1,5 @@
-import { Controller, Get, Patch, Body, UseGuards, Request, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Body, UseGuards, Request, BadRequestException, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { BusinessService } from './business.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateBusinessDto } from './dto/update-business.dto';
@@ -37,5 +38,36 @@ export class BusinessController {
             // Pass undefined will fail if logic expects string.
         }
         return this.businessService.update(req.user.businessId, updateBusinessDto);
+    }
+
+    @Post('me/logo')
+    @UseInterceptors(FileInterceptor('logo'))
+    async uploadLogo(@Request() req, @UploadedFile() file: any) {
+        if (!file) {
+            throw new BadRequestException('No logo file provided');
+        }
+
+        // Validate file type
+        if (!file.mimetype.startsWith('image/')) {
+            throw new BadRequestException('File must be an image');
+        }
+
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            throw new BadRequestException('File size must be less than 5MB');
+        }
+
+        let businessId = req.user.businessId;
+
+        if (!businessId) {
+            const business = await this.businessService.findByUserId(req.user.userId);
+            businessId = business?.id;
+        }
+
+        if (!businessId) {
+            throw new BadRequestException('User has no business associated');
+        }
+
+        return this.businessService.uploadLogo(businessId, file);
     }
 }

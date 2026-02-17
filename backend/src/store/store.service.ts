@@ -13,6 +13,7 @@ export class StoreService {
                 name: true,
                 slug: true,
                 whatsappNumber: true,
+                logoUrl: true,
             },
         });
 

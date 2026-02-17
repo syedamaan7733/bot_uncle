@@ -6,7 +6,7 @@ import { SearchModule } from '../search/search.module';
 import { BusinessModule } from '../business/business.module';
 
 @Module({
-    imports: [PrismaModule, SearchModule, BusinessModule],
+    imports: [PrismaModule, SearchModule, BusinessModule,],
     controllers: [ProductController],
     providers: [ProductService],
     exports: [ProductService],

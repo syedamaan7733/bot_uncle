@@ -28,6 +28,7 @@ model Business {
   userId                 String   @map("user_id")
   name                   String
   slug                   String   @unique
+  logoUrl                String?  @map("logo_url")
   whatsappNumber         String?  @map("whatsapp_number")
   whatsappAccessToken    String?  @map("whatsapp_access_token")
   whatsappPhoneNumberId  String?  @map("whatsapp_phone_number_id")

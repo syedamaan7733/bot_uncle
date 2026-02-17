@@ -5,7 +5,7 @@ import { authService } from '../services/auth.service';
 import type { RegisterRequest } from '../types/auth';
 import { useState } from 'react';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 function RegisterPage() {
     const navigate = useNavigate();
@@ -32,20 +32,57 @@ function RegisterPage() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: '#ffffff',
+            position: 'relative',
+            overflow: 'hidden',
         }}>
+            {/* Background decoration */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'radial-gradient(circle at 20% 80%, rgba(128, 0, 0, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(128, 0, 0, 0.1) 0%, transparent 50%)',
+                zIndex: 0,
+            }} />
+
             <Card
                 style={{
-                    width: 450,
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(10px)',
-                    borderRadius: 16,
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    width: 480,
+                    background: 'rgba(255, 255, 255, 0.25)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 20,
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    zIndex: 1,
+                    position: 'relative',
+                }}
+                styles={{
+                    body: {
+                        padding: '48px 40px',
+                    }
                 }}
             >
-                <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                    <Title level={2} style={{ marginBottom: 8 }}>Create Account</Title>
-                    <Text type="secondary">Start selling via WhatsApp today</Text>
+                <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                    <div style={{
+                        fontSize: '48px',
+                        fontWeight: 700,
+                        color: '#800000',
+                        marginBottom: '16px',
+                        letterSpacing: '-0.02em',
+                    }}>
+                        Create Account
+                    </div>
+                    <Text
+                        style={{
+                            fontSize: '16px',
+                            color: 'rgba(128, 0, 0, 0.7)',
+                            lineHeight: '1.5',
+                        }}
+                    >
+                        Start selling via WhatsApp today
+                    </Text>
                 </div>
 
                 <Form
@@ -53,6 +90,7 @@ function RegisterPage() {
                     onFinish={onFinish}
                     autoComplete="off"
                     layout="vertical"
+                    size="large"
                 >
                     <Form.Item
                         name="email"
@@ -62,9 +100,13 @@ function RegisterPage() {
                         ]}
                     >
                         <Input
-                            prefix={<UserOutlined />}
+                            prefix={<UserOutlined style={{ color: 'rgba(128, 0, 0, 0.6)' }} />}
                             placeholder="Email"
-                            size="large"
+                            style={{
+                                borderRadius: '12px',
+                                border: '1px solid rgba(128, 0, 0, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                            }}
                         />
                     </Form.Item>
 
@@ -76,9 +118,13 @@ function RegisterPage() {
                         ]}
                     >
                         <Input.Password
-                            prefix={<LockOutlined />}
+                            prefix={<LockOutlined style={{ color: 'rgba(128, 0, 0, 0.6)' }} />}
                             placeholder="Password (min 6 characters)"
-                            size="large"
+                            style={{
+                                borderRadius: '12px',
+                                border: '1px solid rgba(128, 0, 0, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                            }}
                         />
                     </Form.Item>
 
@@ -87,19 +133,28 @@ function RegisterPage() {
                         rules={[{ required: true, message: 'Please input your business name!' }]}
                     >
                         <Input
-                            prefix={<ShopOutlined />}
+                            prefix={<ShopOutlined style={{ color: 'rgba(128, 0, 0, 0.6)' }} />}
                             placeholder="Business Name"
-                            size="large"
+                            style={{
+                                borderRadius: '12px',
+                                border: '1px solid rgba(128, 0, 0, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                            }}
                         />
                     </Form.Item>
 
                     <Form.Item
                         name="whatsappNumber"
+                        style={{ marginBottom: '32px' }}
                     >
                         <Input
-                            prefix={<PhoneOutlined />}
+                            prefix={<PhoneOutlined style={{ color: 'rgba(128, 0, 0, 0.6)' }} />}
                             placeholder="WhatsApp Number (optional)"
-                            size="large"
+                            style={{
+                                borderRadius: '12px',
+                                border: '1px solid rgba(128, 0, 0, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                            }}
                         />
                     </Form.Item>
 
@@ -111,23 +166,31 @@ function RegisterPage() {
                             loading={loading}
                             block
                             style={{
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                background: '#800000',
                                 border: 'none',
-                                height: 48,
+                                height: 52,
                                 fontSize: 16,
                                 fontWeight: 600,
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 16px rgba(128, 0, 0, 0.3)',
                             }}
                         >
                             Create Account
                         </Button>
                     </Form.Item>
 
-                    <div style={{ textAlign: 'center' }}>
-                        <Text type="secondary">
+                    <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                        <Text style={{ color: 'rgba(128, 0, 0, 0.6)' }}>
                             Already have an account?{' '}
                             <a
                                 onClick={() => navigate({ to: '/login' })}
-                                style={{ color: '#667eea', fontWeight: 600 }}
+                                style={{
+                                    color: '#800000',
+                                    fontWeight: 600,
+                                    textDecoration: 'none',
+                                    borderBottom: '1px solid rgba(128, 0, 0, 0.3)',
+                                    paddingBottom: '2px',
+                                }}
                             >
                                 Sign in
                             </a>

@@ -30,4 +30,20 @@ export const productService = {
     delete: async (id: string): Promise<void> => {
         await api.delete(`/products/${id}`);
     },
+
+    uploadImages: async (id: string, formData: FormData): Promise<string[]> => {
+        const response = await api.post<string[]>(`/products/${id}/images`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+
+    removeImages: async (id: string, imageUrls: string[]): Promise<string[]> => {
+        const response = await api.delete<string[]>(`/products/${id}/images`, {
+            data: { imageUrls },
+        });
+        return response.data;
+    },
 };

@@ -1,32 +1,75 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../services/api';
-import { Spin, Result, Button, Layout, Input, Badge, FloatButton, Card, Empty, Tag, Drawer } from 'antd';
-import { ShoppingCartOutlined, WhatsAppOutlined, SearchOutlined, ShoppingOutlined, FilterOutlined, ShopOutlined, CheckOutlined, PlusOutlined } from '@ant-design/icons';
-import { useState, useMemo } from 'react';
+import { Spin, Result, Button, Select, Checkbox, Tooltip, Typography } from 'antd';
+import { WhatsAppOutlined, GlobalOutlined, AppstoreOutlined, AppstoreFilled } from '@ant-design/icons';
+import BusinessBranding from '../../components/branding/BusinessBranding';
+import { ProductCard } from '../../components/products/ProductCard';
 
-// Types
-interface StoreData {
-    business: any;
-    categories: any[];
-    products: any[];
-}
+// Helper to convert UPPERCASE to Title Case
+const toTitleCase = (str: string): string => {
+    if (!str) return "";
+    return str.replace(
+        /\w\S*/g,
+        (txt: string) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+    );
+};
+
+// Translations
+const translations = {
+    en: {
+        explore: "Explore",
+        selectCategory: "Select Category",
+        showingResults: "Showing results for",
+        noItems: "No items found for this category.",
+        clickToChat: "Click to enquire on WhatsApp",
+        sendEnquiry: "Send Enquiry",
+        selected: "Selected",
+        bulkMessageIntro: "Hello, I am interested in these products:",
+        articleLabel: "Article",
+        categoryLabel: "Category",
+        imageLabel: "Image",
+    },
+    hi: {
+        explore: "खोजें",
+        selectCategory: "श्रेणी चुनें",
+        showingResults: "परिणाम दिखाए जा रहे हैं",
+        noItems: "इस श्रेणी के लिए कोई आइटम नहीं मिला।",
+        clickToChat: "व्हाट्सएप पर पूछताछ करने के लिए क्लिक करें",
+        sendEnquiry: "पूछताछ भेजें",
+        selected: "चयनित",
+        bulkMessageIntro: "नमस्ते, मैं इन उत्पादों में रुचि रखता हूँ:",
+        articleLabel: "आर्टिकल",
+        categoryLabel: "श्रेणी",
+        imageLabel: "छवि",
+    },
+};
 
 export const Route = createFileRoute('/store/$businessSlug')({
     component: StorePage,
     loader: async ({ params }) => {
         return { businessSlug: params.businessSlug };
     },
+    validateSearch: (search) => ({
+        categoryId: search.categoryId as string | undefined,
+    }),
 });
 
 function StorePage() {
     const { businessSlug } = Route.useParams();
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [cart, setCart] = useState<Record<string, number>>({}); // productId -> quantity
-    const [isCartOpen, setIsCartOpen] = useState(false);
+    const { categoryId } = Route.useSearch();
+    const navigate = Route.useNavigate();
 
-    // Fetch all data in parallel
+    // States
+    const [lang, setLang] = useState("hi");
+    const [isSingleColumn, setIsSingleColumn] = useState(false);
+
+    const [selectedItems, setSelectedItems] = useState<any[]>([]);
+
+    const t = translations[lang as 'en' | 'hi'];
+
+    // Fetch business
     const { data: business, isLoading: loadingBusiness } = useQuery({
         queryKey: ['store', businessSlug, 'business'],
         queryFn: async () => {
@@ -35,6 +78,7 @@ function StorePage() {
         },
     });
 
+    // Fetch categories
     const { data: categories, isLoading: loadingCategories } = useQuery({
         queryKey: ['store', businessSlug, 'categories'],
         queryFn: async () => {
@@ -43,85 +87,87 @@ function StorePage() {
         },
     });
 
+    // Fetch products
     const { data: products, isLoading: loadingProducts } = useQuery({
-        queryKey: ['store', businessSlug, 'products', selectedCategory, searchQuery],
+        queryKey: ['store', businessSlug, 'products', categoryId],
         queryFn: async () => {
             const params: any = {};
-            if (selectedCategory) params.categoryId = selectedCategory;
-            if (searchQuery) params.search = searchQuery;
+            if (categoryId) params.categoryId = categoryId;
             const res = await api.get(`/store/${businessSlug}/products`, { params });
             return res.data;
         },
     });
 
-    // Calculate cart totals
-    const cartSummary = useMemo(() => {
-        if (!products) return { count: 0, total: 0, items: [] };
+    // Effects
+    useEffect(() => {
+        setSelectedItems([]);
+    }, [categoryId]);
 
-        let count = 0;
-        let total = 0;
-        const items: any[] = [];
+    useEffect(() => {
+        if (categories && categories.length > 0 && !categoryId) {
+            // Set first category as default in URL
+            navigate({
+                search: { categoryId: categories[0].id },
+                replace: true
+            });
+        }
+    }, [categories, categoryId, navigate]);
 
-        Object.keys(cart).forEach(productId => {
-            const product = products.find((p: any) => p.id === productId);
-            // If product not in current view (e.g. filtered out), we might miss its price here
-            // ideally we should fetch cart items separately or use a cache of all products
-            // For now, let's assume if it's in cart, user has seen it.
-            // Fallback: This logic might be slightly buggy if product list changes due to filter. 
-            // In a real app we'd have a separate 'all products' cache or fetch cart items by ID.
-            if (product) {
-                count += cart[productId];
-                total += Number(product.price) * cart[productId];
-                items.push({ ...product, quantity: cart[productId] });
-            }
-        });
-        return { count, total, items };
-    }, [cart, products]);
+    // Functions
+    const toggleItemSelection = (item: any) => {
+        const isSelected = selectedItems.find((i: any) => i.id === item.id);
+        if (isSelected) {
+            setSelectedItems((prev: any[]) => prev.filter((i: any) => i.id !== item.id));
+        } else {
+            setSelectedItems((prev: any[]) => [...prev, item]);
+        }
+    };
 
-
-    const handleAddToCart = (productId: string) => {
-        setCart(prev => {
-            const newCart = { ...prev };
-            // Simple toggle for now, or increment? Task said "distinct UI state"
-            if (newCart[productId]) {
-                delete newCart[productId];
-            } else {
-                newCart[productId] = 1;
-            }
-            return newCart;
+    const handleCategoryChange = (value: string) => {
+        navigate({
+            search: { categoryId: value },
+            replace: true
         });
     };
 
-    const handleWhatsAppOrder = () => {
-        // Generate WhatsApp message
-        // Need to find products even if filtered out. 
-        // Since 'products' only contains filtered list, this is a limitation of current simple query.
-        // A proper implementation would keep a map of all seen products or fetch specific ids.
-        // For the MVP fix, lets rely on 'cartSummary.items' which relies on 'products'. 
-        // Alert user if cart is empty or items missing? 
+    const toggleLanguage = () => {
+        setLang((prev: string) => prev === "en" ? "hi" : "en");
+    };
 
-        const selectedProducts = cartSummary.items;
-        const total = cartSummary.total;
+    const handleWhatsAppRedirect = (item: any) => {
+        const phoneNumber = business?.whatsappNumber || "";
+        let message = "";
 
-        if (selectedProducts.length === 0) return;
+        if (lang === "hi") {
+            message = `नमस्ते, मैं इस प्रोडक्ट के बारे में जानकारी चाहता हूँ।\n${t.articleLabel}: ${item.name}\n${t.categoryLabel}: ${categoryId}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}`;
+        } else {
+            message = `Hello, I am interested in this product:\nArticle: ${item.name}\nCategory: ${categoryId}\nImage: ${item.imageUrls?.[0] || 'N/A'}`;
+        }
 
-        let message = `Hi *${business.name}*, I would like to place an order:\n\n`;
-        selectedProducts.forEach((p: any, index: number) => {
-            message += `${index + 1}. *${p.name}* - ₹${p.price}\n`;
+        const url = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+    };
+
+    const handleBulkWhatsAppRedirect = () => {
+        const phoneNumber = business?.whatsappNumber || "";
+        let message = `${t.bulkMessageIntro}\n\n`;
+
+        selectedItems.forEach((item, index) => {
+            if (lang === "hi") {
+                message += `${index + 1}. ${t.articleLabel}: ${item.name}, ${t.categoryLabel}: ${categoryId}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}\n\n`;
+            } else {
+                message += `${index + 1}. ${t.articleLabel}: ${item.name}, ${t.categoryLabel}: ${categoryId}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}\n\n`;
+            }
         });
-        message += `\n*Total Estimate: ₹${total}*`;
-        message += `\n\nPlease confirm availability.`;
 
-        const encodedMessage = encodeURIComponent(message);
-        const number = business.whatsappNumber || '';
-        const cleanNumber = number.replace(/[^0-9]/g, '');
-
-        window.open(`https://wa.me/${cleanNumber}?text=${encodedMessage}`, '_blank');
+        const url = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(url, "_blank");
+        setSelectedItems([]);
     };
 
     if (loadingBusiness) {
         return (
-            <div className="flex justify-center items-center h-screen bg-gray-50">
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#ffffff' }}>
                 <Spin size="large" />
             </div>
         );
@@ -138,202 +184,241 @@ function StorePage() {
     }
 
     return (
-        <Layout className="min-h-screen bg-[#f8f9fa]">
-            {/* Header */}
-            <Layout.Header className="bg-white/80 backdrop-blur-lg border-b sticky top-0 z-20 px-4 sm:px-6 flex items-center justify-between h-16 shadow-sm transition-all duration-300">
-                <div className="flex items-center gap-3">
-                    <span className="bg-green-100 text-green-600 p-2 rounded-lg">
-                        <ShopOutlined className="text-xl" />
-                    </span>
-                    <h1 className="text-xl font-bold text-gray-800 m-0 truncate max-w-[200px] sm:max-w-md">
-                        {business.name}
-                    </h1>
-                </div>
-                <div className="flex items-center gap-4">
-                    {/* Search - Visible on Desktop */}
-                    <div className="hidden md:block w-64">
-                        <Input
-                            prefix={<SearchOutlined className="text-gray-400" />}
-                            placeholder="Search..."
-                            className="rounded-full bg-gray-50 border-transparent hover:bg-white focus:bg-white transition-all"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                </div>
-            </Layout.Header>
-
-            <Layout.Content className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-
-                {/* Mobile Search & Categories */}
-                <div className="md:hidden mb-6 space-y-4">
-                    <Input
-                        prefix={<SearchOutlined className="text-gray-400" />}
-                        placeholder="Search products..."
-                        className="rounded-full h-10 shadow-sm"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-
-                    {/* Horizontal Scroll Categories */}
-                    <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide -mx-4 px-4">
-                        <button
-                            onClick={() => setSelectedCategory(null)}
-                            className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === null
-                                    ? 'bg-black text-white shadow-md'
-                                    : 'bg-white text-gray-600 border border-gray-200'
-                                }`}
-                        >
-                            All
-                        </button>
-                        {categories?.map((cat: any) => (
-                            <button
-                                key={cat.id}
-                                onClick={() => setSelectedCategory(cat.id)}
-                                className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === cat.id
-                                        ? 'bg-black text-white shadow-md'
-                                        : 'bg-white text-gray-600 border border-gray-200'
-                                    }`}
-                            >
-                                {cat.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-8">
-                    {/* Desktop Sidebar */}
-                    <div className="hidden md:block w-64 flex-shrink-0">
-                        <div className="sticky top-24 space-y-6">
-                            <div>
-                                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Categories</h3>
-                                <div className="space-y-1">
-                                    <button
-                                        onClick={() => setSelectedCategory(null)}
-                                        className={`w-full text-left px-3 py-2 rounded-lg transition-all text-sm font-medium ${selectedCategory === null
-                                            ? 'bg-black text-white shadow-lg transform scale-105'
-                                            : 'text-gray-600 hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        All Products
-                                    </button>
-                                    {categories?.map((cat: any) => (
-                                        <button
-                                            key={cat.id}
-                                            onClick={() => setSelectedCategory(cat.id)}
-                                            className={`w-full text-left px-3 py-2 rounded-lg transition-all text-sm font-medium flex justify-between items-center ${selectedCategory === cat.id
-                                                ? 'bg-black text-white shadow-lg transform scale-105'
-                                                : 'text-gray-600 hover:bg-gray-100'
-                                                }`}
-                                        >
-                                            <span>{cat.name}</span>
-                                            {cat._count?.products > 0 && <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedCategory === cat.id ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-500'}`}>{cat._count.products}</span>}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Product Grid */}
-                    <div className="flex-1">
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-800">
-                                {selectedCategory
-                                    ? categories?.find((c: any) => c.id === selectedCategory)?.name
-                                    : 'All Products'}
-                            </h2>
-                            <span className="text-gray-500 text-sm">{products?.length || 0} items</span>
-                        </div>
-
-                        {loadingProducts ? (
-                            <div className="flex justify-center py-24"><Spin size="large" /></div>
-                        ) : products?.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-dashed border-gray-200">
-                                <Empty description="No products found" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
-                                {products?.map((product: any) => {
-                                    const inCart = !!cart[product.id];
-                                    return (
-                                        <div
-                                            key={product.id}
-                                            className={`group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col relative ${inCart ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
-                                        >
-                                            <div className="aspect-square bg-gray-50 relative overflow-hidden">
-                                                {product.imageUrls?.[0] ? (
-                                                    <img
-                                                        src={product.imageUrls[0]}
-                                                        alt={product.name}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-gray-200 bg-gray-50">
-                                                        <ShoppingOutlined style={{ fontSize: '48px' }} />
-                                                    </div>
-                                                )}
-
-                                                {/* Overlay Gradient */}
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            </div>
-
-                                            <div className="p-4 flex-1 flex flex-col">
-                                                <div className="flex-1">
-                                                    <h3 className="font-semibold text-gray-900 mb-1 leading-tight group-hover:text-green-600 transition-colors">
-                                                        {product.name}
-                                                    </h3>
-                                                    <p className="text-gray-500 text-xs sm:text-sm line-clamp-2 mb-3 h-10">
-                                                        {product.line1 || 'No description available'}
-                                                    </p>
-                                                </div>
-
-                                                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                                                    <span className="font-bold text-lg text-gray-900">₹{product.price}</span>
-                                                    <Button
-                                                        type={inCart ? "primary" : "default"}
-                                                        shape="circle"
-                                                        size="large"
-                                                        onClick={() => handleAddToCart(product.id)}
-                                                        className={`flex items-center justify-center transition-all ${inCart ? 'bg-green-600 hover:bg-green-500 border-none' : 'hover:border-green-500 hover:text-green-600'}`}
-                                                        icon={inCart ? <CheckOutlined /> : <PlusOutlined />}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </Layout.Content>
-
-            {/* Bottom Floating Bar (Mobile/Desktop) */}
-            <div className={`fixed bottom-6 left-0 right-0 px-4 sm:px-6 z-50 transition-transform duration-500 transform ${cartSummary.count > 0 ? 'translate-y-0' : 'translate-y-[150%]'}`}>
-                <div className="max-w-2xl mx-auto">
-                    <button
-                        onClick={handleWhatsAppOrder}
-                        className="w-full bg-[#25D366] hover:bg-[#1fb854] text-white rounded-2xl shadow-xl shadow-green-500/20 p-4 flex items-center justify-between group transition-all"
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, white, #f7f7f9)', paddingTop: '0' }}>
+            {/* Brand Header */}
+            <div
+                style={{
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    borderBottom: '1px solid rgba(128, 0, 0, 0.1)',
+                    padding: '16px 24px',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 20,
+                }}
+            >
+                <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <BusinessBranding name={business?.name || ''} logoUrl={business?.logoUrl} size="medium" />
+                    <Typography.Text
+                        style={{
+                            color: 'rgba(128, 0, 0, 0.6)',
+                            fontSize: '12px',
+                            margin: 0,
+                        }}
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="bg-white/20 px-3 py-1 rounded-lg text-sm font-semibold backdrop-blur-sm">
-                                {cartSummary.count} Items
-                            </div>
-                            <span className="font-medium opacity-90">
-                                ₹{cartSummary.total.toFixed(2)}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-2 font-bold text-lg">
-                            Place Order <WhatsAppOutlined className="text-xl group-hover:scale-110 transition-transform" />
-                        </div>
-                    </button>
+                        Online Store
+                    </Typography.Text>
                 </div>
             </div>
 
-            {/* Added extra padding at bottom so content doesn't get hidden behind floating bar */}
-            <div className="h-24"></div>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+                {/* Header Section */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <Typography.Title
+                                level={1}
+                                style={{
+                                    fontSize: '36px',
+                                    fontWeight: 800,
+                                    color: '#800000',
+                                    letterSpacing: 'tight',
+                                    textTransform: 'uppercase',
+                                    margin: 0,
+                                }}
+                            >
+                                {t.explore}
+                            </Typography.Title>
+                            <Tooltip title={lang === 'en' ? "हिंदी में देखें" : "View in English"}>
+                                <Button
+                                    icon={<GlobalOutlined />}
+                                    onClick={toggleLanguage}
+                                    type="text"
+                                    style={{ color: '#800000' }}
+                                />
+                            </Tooltip>
+                        </div>
 
-        </Layout>
+                        {/* Mobile Grid Toggle */}
+                        <div style={{ display: 'flex', gap: '4px', background: 'white', padding: '4px', borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                            <Button
+                                icon={<AppstoreOutlined />}
+                                size="small"
+                                type="text"
+                                style={{
+                                    color: isSingleColumn ? 'white' : '#6b7280',
+                                    background: isSingleColumn ? '#800000' : 'transparent',
+                                    borderRadius: '6px',
+                                }}
+                                onClick={() => setIsSingleColumn(true)}
+                            />
+                            <Button
+                                icon={<AppstoreFilled />}
+                                size="small"
+                                type="text"
+                                style={{
+                                    color: !isSingleColumn ? 'white' : '#6b7280',
+                                    background: !isSingleColumn ? '#800000' : 'transparent',
+                                    borderRadius: '6px',
+                                }}
+                                onClick={() => setIsSingleColumn(false)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Category Dropdown */}
+                    <div style={{ width: '300px' }}>
+                        <Select
+                            placeholder={t.selectCategory}
+                            value={categoryId}
+                            onChange={handleCategoryChange}
+                            style={{ width: '100%' }}
+                            loading={loadingCategories}
+                        >
+                            {categories?.map((cat: any) => (
+                                <Select.Option key={cat.id} value={cat.id}>
+                                    {toTitleCase(cat.name)}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Selected Category Status */}
+                {categoryId && (
+                    <div style={{ marginBottom: '24px' }}>
+                        <Typography.Text style={{ fontSize: '16px', color: 'rgba(128, 0, 0, 0.7)', fontWeight: 500 }}>
+                            {t.showingResults} <span style={{ color: '#800000', fontWeight: 'bold' }}>{toTitleCase(categories?.find((c: any) => c.id === categoryId)?.name)}</span>
+                        </Typography.Text>
+                    </div>
+                )}
+
+                {/* Products Grid */}
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(auto-fill, minmax(${isSingleColumn ? '100%' : '280px'}, 1fr))`,
+                        gap: '20px',
+                        paddingBottom: '120px',
+                    }}
+                >
+                    {products?.map((product: any) => (
+                        <div key={product.id} style={{ position: 'relative' }}>
+                            <ProductCard
+                                name={product.name}
+                                price={parseFloat(product.price)}
+                                imageUrl={product.imageUrls?.[0] || ''}
+                                line1={product.line1}
+                                line2={product.line2}
+                                line3={product.line3}
+                                size="medium"
+                                showWhatsAppButton={true}
+                                showCheckbox={true}
+                                checkboxChecked={selectedItems.some(item => item.id === product.id)}
+                                onCheckboxChange={() => toggleItemSelection(product)}
+                                onClick={() => handleWhatsAppRedirect(product)}
+                            />
+                        </div>
+                    ))}
+
+                    {/* Loading Skeletons */}
+                    {loadingProducts && Array.from({ length: 5 }).map((_, i: number) => (
+                        <div
+                            key={`skeleton-${i}`}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.8)',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <div style={{ width: '200px', height: '200px', background: '#f3f4f6', borderRadius: '8px', marginBottom: '16px' }} />
+                            <div style={{ width: '60%', height: '20px', background: '#f3f4f6', borderRadius: '4px', marginBottom: '8px' }} />
+                            <div style={{ width: '40%', height: '15px', background: '#f3f4f6', borderRadius: '4px' }} />
+                        </div>
+                    ))}
+
+                    {!loadingProducts && products?.length === 0 && categoryId && (
+                        <div style={{ textAlign: 'center', marginTop: '48px', padding: '48px' }}>
+                            {business?.logoUrl ? (
+                                <img
+                                    src={business.logoUrl}
+                                    alt="No products"
+                                    style={{
+                                        width: '120px',
+                                        height: '120px',
+                                        objectFit: 'contain',
+                                        opacity: 0.5,
+                                        marginBottom: '24px',
+                                    }}
+                                />
+                            ) : (
+                                <div
+                                    style={{
+                                        width: '120px',
+                                        height: '120px',
+                                        background: 'rgba(128, 0, 0, 0.1)',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 24px',
+                                    }}
+                                >
+                                    <Typography.Text style={{ fontSize: '48px', color: 'rgba(128, 0, 0, 0.3)' }}>
+                                        📦
+                                    </Typography.Text>
+                                </div>
+                            )}
+                            <Typography.Title level={4} style={{ color: 'rgba(128, 0, 0, 0.8)', marginBottom: '8px' }}>
+                                {t.noItems}
+                            </Typography.Title>
+                            <Typography.Text style={{ fontSize: '14px', color: 'rgba(128, 0, 0, 0.6)' }}>
+                                Try selecting a different category
+                            </Typography.Text>
+                        </div>
+                    )}
+                </div>
+
+                {/* Sticky Bottom Bar for Bulk Send */}
+                {selectedItems.length > 0 && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                            borderTop: '1px solid rgba(0, 0, 0, 0.1)',
+                            padding: '16px 24px',
+                            boxShadow: '0 -4px 6px rgba(0, 0, 0, 0.1)',
+                            zIndex: 100,
+                        }}
+                    >
+                        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography.Text style={{ fontWeight: 'bold', fontSize: '16px' }}>
+                                {selectedItems.length} {t.selected}
+                            </Typography.Text>
+                            <Button
+                                type="primary"
+                                icon={<WhatsAppOutlined />}
+                                onClick={handleBulkWhatsAppRedirect}
+                                size="large"
+                                style={{
+                                    background: '#25D366',
+                                    borderColor: '#25D366',
+                                    borderRadius: '8px',
+                                }}
+                            >
+                                {t.sendEnquiry} ({selectedItems.length})
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div >
     );
 }

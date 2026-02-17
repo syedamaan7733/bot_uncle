@@ -23,6 +23,7 @@ export class AuthService {
         const existingUser = await this.prisma.user.findUnique({
             where: { email },
         });
+        console.log(existingUser)
 
         if (existingUser) {
             throw new ConflictException('User already exists');

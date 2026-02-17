@@ -9,7 +9,10 @@ import {
     UseGuards,
     Request,
     Query,
+    UseInterceptors,
+    UploadedFiles,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -68,5 +71,30 @@ export class ProductController {
     async remove(@Request() req, @Param('id') id: string) {
         const businessId = await this.getBusinessId(req);
         return this.productService.remove(id, businessId);
+    }
+
+    @Post(':id/images')
+    @UseInterceptors(FilesInterceptor('images', 8))
+    async uploadImages(
+        @Request() req,
+        @Param('id') id: string,
+        @UploadedFiles() files: any[],
+    ) {
+        if (!files || files.length === 0) {
+            throw new Error('No image files provided');
+        }
+
+        const businessId = await this.getBusinessId(req);
+        return this.productService.uploadImages(id, businessId, files);
+    }
+
+    @Delete(':id/images')
+    async removeImages(
+        @Request() req,
+        @Param('id') id: string,
+        @Body() body: { imageUrls: string[] },
+    ) {
+        const businessId = await this.getBusinessId(req);
+        return this.productService.removeImages(id, businessId, body.imageUrls);
     }
 }

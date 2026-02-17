@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/router-devtools": "^1.159.5",
     "@tanstack/router-vite-plugin": "^1.159.5",
     "@types/node": "^24.10.1",
