@@ -4,6 +4,7 @@ import { WhatsappService } from './whatsapp.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { CategoryModule } from '../category/category.module';
 import { ProductModule } from '../product/product.module';
+import { SearchModule } from '../search/search.module';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
@@ -11,7 +12,8 @@ import { HttpModule } from '@nestjs/axios';
         PrismaModule,
         HttpModule,
         CategoryModule,
-        ProductModule
+        ProductModule,
+        SearchModule
     ],
     controllers: [WhatsappController],
     providers: [WhatsappService],

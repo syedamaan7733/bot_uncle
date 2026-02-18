@@ -21,7 +21,7 @@ export class WhatsappController {
         @Res() res: Response,
     ) {
         const verifyToken = this.configService.get<string>('WHATSAPP_WEBHOOK_VERIFY_TOKEN');
-
+        console.log(verifyToken, token)
         if (mode === 'subscribe' && token === verifyToken) {
             this.logger.log('Webhook verified successfully');
             res.status(HttpStatus.OK).send(challenge);

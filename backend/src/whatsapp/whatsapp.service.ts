@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessageBuilder } from './helpers/message-builder';
 import { lastValueFrom } from 'rxjs';
+import { SearchService } from '../search/search.service';
 
 @Injectable()
 export class WhatsappService {
@@ -11,6 +12,7 @@ export class WhatsappService {
     constructor(
         private prisma: PrismaService,
         private httpService: HttpService,
+        private searchService: SearchService,
     ) { }
 
     async processWebhook(parsedData: any) {
@@ -57,6 +59,8 @@ export class WhatsappService {
                     await this.sendStoreLink(from, business, categoryId);
                 }
             }
+        } else if (type === 'image') {
+            await this.handleImageMessage(from, business, message.image);
         }
     }
 
@@ -89,6 +93,105 @@ export class WhatsappService {
 
         const payload = MessageBuilder.getStoreLink(to, business.slug, category.slug);
         await this.sendMessage(to, business, payload);
+    }
+
+    async handleImageMessage(to: string, business: any, imageData: any) {
+        if (!business) return;
+
+        try {
+            this.logger.log(`Processing image message: ${imageData.id}`);
+
+            // Download image from WhatsApp
+            const imageUrl = await this.downloadWhatsAppImage(imageData, business);
+
+            if (!imageUrl) {
+                await this.sendMessage(to, business, MessageBuilder.getTextMessage(to, "Sorry, I couldn't process that image. Please try again."));
+                return;
+            }
+
+            // Generate description and search for similar products
+            const description = await this.searchService.generateImageDescription(imageUrl);
+            this.logger.log(`Generated image description: ${description}`);
+
+            // Search for products using the image description
+            const searchResults = await this.searchService.search(business.id, description, null, 3);
+
+            if (searchResults.length === 0) {
+                await this.sendMessage(to, business, MessageBuilder.getTextMessage(to, "I couldn't find any products matching that image. Would you like to see our categories instead?"));
+                await this.sendCategoryList(to, business);
+                return;
+            }
+
+            // Send product results
+            await this.sendProductResults(to, business, searchResults, description);
+
+        } catch (error) {
+            this.logger.error('Error processing image message', error);
+            await this.sendMessage(to, business, MessageBuilder.getTextMessage(to, "Sorry, I had trouble processing that image. Please try again or browse our categories."));
+            await this.sendCategoryList(to, business);
+        }
+    }
+
+    async downloadWhatsAppImage(imageData: any, business: any): Promise<string | null> {
+        try {
+            // First get the media URL from WhatsApp
+            const mediaUrl = `https://graph.facebook.com/v19.0/${imageData.id}`;
+
+            const mediaResponse = await lastValueFrom(
+                this.httpService.get(mediaUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${business.whatsappAccessToken}`,
+                    },
+                })
+            );
+
+            const downloadUrl = mediaResponse.data.url;
+
+            // Download the actual image content
+            const imageResponse = await lastValueFrom(
+                this.httpService.get(downloadUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${business.whatsappAccessToken}`,
+                    },
+                    responseType: 'arraybuffer'
+                })
+            );
+
+            // Convert to base64 data URL
+            const base64Image = Buffer.from(imageResponse.data, 'binary').toString('base64');
+            const mimeType = imageData.mime_type || 'image/jpeg';
+            const dataUrl = `data:${mimeType};base64,${base64Image}`;
+
+            return dataUrl;
+
+        } catch (error) {
+            this.logger.error('Error downloading WhatsApp image', error);
+            return null;
+        }
+    }
+
+    async sendProductResults(to: string, business: any, searchResults: any[], description: string) {
+        const topResults = searchResults.slice(0, 5); // Send top 5 results
+
+        let message = `I found top ${searchResults.length} products matching your image:\n\n`;
+
+        topResults.forEach((result, index) => {
+            const product = result.product;
+            message += `${index + 1}. ${product.name}\n`;
+            message += `   💰 ${product.price}\n`;
+            if (product.line1) message += `   📝 ${product.line1}\n`;
+            message += `   � Product: https://your-domain.com/store/${business.slug}?search=${encodeURIComponent(product.name)}\n\n`;
+        });
+
+        if (searchResults.length > 5) {
+            message += `... and ${searchResults.length - 5} more products.\n\n\n\n\n`;
+        }
+
+        message += `🔍 View all similar products: https://your-domain.com/store/${business.slug}?search=${encodeURIComponent(description)}\n\n`;
+        message += `Image description: "${description}"\n\n`;
+        message += "Would you like to see more products or browse by category?";
+
+        await this.sendMessage(to, business, MessageBuilder.getTextMessage(to, message));
     }
 
     async sendMessage(to: string, business: any, payload: any) {

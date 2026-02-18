@@ -26,6 +26,7 @@ export class BusinessService {
     }
 
     async update(id: string, updateBusinessDto: UpdateBusinessDto) {
+
         // Check if slug is taken by another business if it's being updated
         if (updateBusinessDto.slug) {
             const existing = await this.prisma.business.findFirst({
@@ -38,7 +39,7 @@ export class BusinessService {
                 throw new BadRequestException('Business slug is already taken');
             }
         }
-
+        console.log(updateBusinessDto)
         return this.prisma.business.update({
             where: { id },
             data: updateBusinessDto,

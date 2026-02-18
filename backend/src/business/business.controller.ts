@@ -33,9 +33,7 @@ export class BusinessController {
         // But for now let's assume GET /me fixes the token issue eventually or we rely on GET /me logic.
         // Actually, update needs ID.
         if (!businessId) {
-            // This is tricky. Ideally fallback usage should also happen here.
-            // But let's verify GET /me first.
-            // Pass undefined will fail if logic expects string.
+            throw new Error('Business ID not found')
         }
         return this.businessService.update(req.user.businessId, updateBusinessDto);
     }
