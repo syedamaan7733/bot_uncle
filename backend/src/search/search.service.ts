@@ -24,7 +24,7 @@ export class SearchService {
                         content: [
                             {
                                 type: 'text',
-                                text: 'Describe this product image in detail, focusing on visual characteristics, colors, style, and what the product appears to be. Keep the description concise but informative, suitable for product search. Do not mention the image quality or technical aspects. in only 25 words ',
+                                text: 'One-sentence description of the product: type, color, material, style. Max 25 words.',
                             },
                             {
                                 type: 'image_url',
