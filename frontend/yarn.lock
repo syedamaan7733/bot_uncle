@@ -253,10 +253,10 @@
   resolved "https://registry.npmjs.org/@emotion/unitless/-/unitless-0.7.5.tgz"
   integrity sha512-OWORNpfjMsSSUBVrRBVGECkhWcULOAJz9ZW8uK9qgxD+87M7jHRcvh/A96XXNhXTLmKcoYSQtBEX7lHMO7YRwg==
 
-"@esbuild/win32-x64@0.27.3":
+"@esbuild/darwin-arm64@0.27.3":
   version "0.27.3"
-  resolved "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.27.3.tgz"
-  integrity sha512-4uJGhsxuptu3OcpVAzli+/gWusVGwZZHTlS63hh++ehExkVT8SgiEf7/uC/PclrPPkLhZqGgCTjd0VWLo6xMqA==
+  resolved "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.27.3.tgz"
+  integrity sha512-Re491k7ByTVRy0t3EKWajdLIr0gz2kKKfzafkth4Q8A5n1xTHrkqZgLLjFEHVD+AXdUGgQMq+Godfq45mGpCKg==
 
 "@eslint-community/eslint-utils@^4.8.0", "@eslint-community/eslint-utils@^4.9.1":
   version "4.9.1"
@@ -779,15 +779,10 @@
   resolved "https://registry.npmjs.org/@rolldown/pluginutils/-/pluginutils-1.0.0-rc.3.tgz"
   integrity sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==
 
-"@rollup/rollup-win32-x64-gnu@4.57.1":
+"@rollup/rollup-darwin-arm64@4.57.1":
   version "4.57.1"
-  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.57.1.tgz"
-  integrity sha512-VMBH2eOOaKGtIJYleXsi2B8CPVADrh+TyNxJ4mWPnKfLB/DBUmzW+5m1xUrcwWoMfSLagIRpjUFeW5CO5hyciQ==
-
-"@rollup/rollup-win32-x64-msvc@4.57.1":
-  version "4.57.1"
-  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.57.1.tgz"
-  integrity sha512-mxRFDdHIWRxg3UfIIAwCm6NzvxG0jDX/wBN6KsQFTvKFqqg9vTrWUE68qEjHt19A5wwx5X5aUi2zuZT7YR0jrA==
+  resolved "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.57.1.tgz"
+  integrity sha512-crNPrwJOrRxagUYeMn/DZwqN88SDmwaJ8Cvi/TN1HnWBU7GwknckyosC2gd0IqYRsHDEnXf328o9/HC6OkPgOg==
 
 "@tailwindcss/node@4.1.18":
   version "4.1.18"
@@ -802,10 +797,10 @@
     source-map-js "^1.2.1"
     tailwindcss "4.1.18"
 
-"@tailwindcss/oxide-win32-x64-msvc@4.1.18":
+"@tailwindcss/oxide-darwin-arm64@4.1.18":
   version "4.1.18"
-  resolved "https://registry.npmjs.org/@tailwindcss/oxide-win32-x64-msvc/-/oxide-win32-x64-msvc-4.1.18.tgz"
-  integrity sha512-bJWbyYpUlqamC8dpR7pfjA0I7vdF6t5VpUGMWRkXVE3AXgIZjYUYAK7II1GNaxR8J1SSrSrppRar8G++JekE3Q==
+  resolved "https://registry.npmjs.org/@tailwindcss/oxide-darwin-arm64/-/oxide-darwin-arm64-4.1.18.tgz"
+  integrity sha512-Gc2q4Qhs660bhjyBSKgq6BYvwDz4G+BuyJ5H1xfhmDR3D8HnHCmT/BSkvSL0vQLy/nkMLY20PQ2OoYMO15Jd0A==
 
 "@tailwindcss/oxide@4.1.18":
   version "4.1.18"
@@ -1758,6 +1753,11 @@ fraction.js@^5.3.4:
   resolved "https://registry.npmjs.org/fraction.js/-/fraction.js-5.3.4.tgz"
   integrity sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==
 
+fsevents@~2.3.2, fsevents@~2.3.3:
+  version "2.3.3"
+  resolved "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
+  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
+
 function-bind@^1.1.2:
   version "1.1.2"
   resolved "https://registry.npmjs.org/function-bind/-/function-bind-1.1.2.tgz"
@@ -2000,10 +2000,10 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
-lightningcss-win32-x64-msvc@1.30.2:
+lightningcss-darwin-arm64@1.30.2:
   version "1.30.2"
-  resolved "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.30.2.tgz"
-  integrity sha512-5g1yc73p+iAkid5phb4oVFMB45417DkRevRbt/El/gKXJk4jid+vPFF/AXbxn05Aky8PapwzZrdJShv5C0avjw==
+  resolved "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.30.2.tgz"
+  integrity sha512-ylTcDJBN3Hp21TdhRT5zBOIi73P6/W0qwvlFEk22fkdXchtNTOU4Qc37SkzV+EKYxLouZ6M4LG9NfZ1qkhhBWA==
 
 lightningcss@^1.21.0, lightningcss@1.30.2:
   version "1.30.2"
