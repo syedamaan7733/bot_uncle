@@ -6,9 +6,6 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
-      },
       colors: {
         primary: '#800000', // Maroon
         background: '#ffffff', // White

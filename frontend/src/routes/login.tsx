@@ -27,23 +27,60 @@ function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white relative overflow-hidden px-4 py-8">
+        <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#ffffff',
+            position: 'relative',
+            overflow: 'hidden',
+        }}>
             {/* Background decoration */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(128,0,0,0.1)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(128,0,0,0.1)_0%,transparent_50%)] z-0 pointer-events-none" />
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'radial-gradient(circle at 20% 80%, rgba(128, 0, 0, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(128, 0, 0, 0.1) 0%, transparent 50%)',
+                zIndex: 0,
+            }} />
 
             <Card
-                className="w-full max-w-[420px] bg-white/40 backdrop-blur-2xl rounded-3xl shadow-glass border border-white/40 z-10 relative overflow-hidden transition-all duration-300 hover:shadow-glass-sm"
+                style={{
+                    width: 420,
+                    background: 'rgba(255, 255, 255, 0.25)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 20,
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                    border: '1px solid rgba(255, 255, 255, 0.18)',
+                    zIndex: 1,
+                    position: 'relative',
+                }}
                 styles={{
                     body: {
-                        padding: '40px 32px',
+                        padding: '48px 40px',
                     }
                 }}
             >
-                <div className="text-center mb-10">
-                    <h1 className="text-[40px] leading-tight font-bold text-primary mb-3 tracking-tight">
+                <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                    <div style={{
+                        fontSize: '48px',
+                        fontWeight: 700,
+                        color: '#800000',
+                        marginBottom: '16px',
+                        letterSpacing: '-0.02em',
+                    }}>
                         Welcome Back
-                    </h1>
-                    <Text className="text-base text-primary/70">
+                    </div>
+                    <Text
+                        style={{
+                            fontSize: '16px',
+                            color: 'rgba(128, 0, 0, 0.7)',
+                            lineHeight: '1.5',
+                        }}
+                    >
                         Sign in to your account
                     </Text>
                 </div>
@@ -63,21 +100,29 @@ function LoginPage() {
                         ]}
                     >
                         <Input
-                            prefix={<UserOutlined className="text-primary/60 pr-1" />}
+                            prefix={<UserOutlined style={{ color: 'rgba(128, 0, 0, 0.6)' }} />}
                             placeholder="Email"
-                            className="rounded-2xl border-primary/20 bg-white/70 hover:bg-white focus:bg-white transition-all px-4 py-3 text-base shadow-sm"
+                            style={{
+                                borderRadius: '12px',
+                                border: '1px solid rgba(128, 0, 0, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                            }}
                         />
                     </Form.Item>
 
                     <Form.Item
                         name="password"
                         rules={[{ required: true, message: 'Please input your password!' }]}
-                        className="mb-8"
+                        style={{ marginBottom: '32px' }}
                     >
                         <Input.Password
-                            prefix={<LockOutlined className="text-primary/60 pr-1" />}
+                            prefix={<LockOutlined style={{ color: 'rgba(128, 0, 0, 0.6)' }} />}
                             placeholder="Password"
-                            className="rounded-2xl border-primary/20 bg-white/70 hover:bg-white focus:bg-white transition-all px-4 py-3 text-base shadow-sm"
+                            style={{
+                                borderRadius: '12px',
+                                border: '1px solid rgba(128, 0, 0, 0.2)',
+                                background: 'rgba(255, 255, 255, 0.8)',
+                            }}
                         />
                     </Form.Item>
 
@@ -88,18 +133,32 @@ function LoginPage() {
                             size="large"
                             loading={loading}
                             block
-                            className="bg-primary hover:!bg-primary/90 border-none h-[52px] text-base font-semibold rounded-2xl shadow-[0_4px_16px_rgba(128,0,0,0.25)] hover:shadow-[0_6px_20px_rgba(128,0,0,0.35)] transition-all active:scale-[0.98]"
+                            style={{
+                                background: '#800000',
+                                border: 'none',
+                                height: 52,
+                                fontSize: 16,
+                                fontWeight: 600,
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 16px rgba(128, 0, 0, 0.3)',
+                            }}
                         >
                             Sign In
                         </Button>
                     </Form.Item>
 
-                    <div className="text-center mt-8">
-                        <Text className="text-primary/60">
+                    <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                        <Text style={{ color: 'rgba(128, 0, 0, 0.6)' }}>
                             Don't have an account?{' '}
                             <a
                                 onClick={() => navigate({ to: '/register' })}
-                                className="text-primary font-semibold no-underline border-b border-primary/30 pb-[2px] hover:border-primary transition-colors cursor-pointer"
+                                style={{
+                                    color: '#800000',
+                                    fontWeight: 600,
+                                    textDecoration: 'none',
+                                    borderBottom: '1px solid rgba(128, 0, 0, 0.3)',
+                                    paddingBottom: '2px',
+                                }}
                             >
                                 Sign up
                             </a>
