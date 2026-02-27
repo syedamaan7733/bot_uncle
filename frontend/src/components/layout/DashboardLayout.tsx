@@ -176,7 +176,7 @@ export function DashboardLayout() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {user.business.slug && <Button
+                        {user.business?.slug && <Button
                             href={`/store/${user.business.slug}`}
                             rel="noopener noreferrer"
                             target="_blank"

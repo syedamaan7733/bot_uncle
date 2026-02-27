@@ -27,7 +27,7 @@ function LoginPage() {
     };
 
     return (
-        <div style={{
+        <div className="auth-outer" style={{
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
@@ -48,6 +48,7 @@ function LoginPage() {
             }} />
 
             <Card
+                className="auth-card"
                 style={{
                     width: 420,
                     background: 'rgba(255, 255, 255, 0.25)',

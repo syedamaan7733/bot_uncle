@@ -27,7 +27,7 @@ function RegisterPage() {
     };
 
     return (
-        <div style={{
+        <div className="auth-outer" style={{
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
@@ -48,6 +48,7 @@ function RegisterPage() {
             }} />
 
             <Card
+                className="auth-card"
                 style={{
                     width: 480,
                     background: 'rgba(255, 255, 255, 0.25)',

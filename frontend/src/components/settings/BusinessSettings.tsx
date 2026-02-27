@@ -155,7 +155,7 @@ export function BusinessSettings() {
                         }
                     }}
                 >
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-grid-2col">
                         <Form.Item
                             name="name"
                             label={
@@ -285,7 +285,7 @@ export function BusinessSettings() {
                         }}
                     />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="form-grid-2col">
                         <Form.Item
                             name="whatsappNumber"
                             label={

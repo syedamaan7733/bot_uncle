@@ -354,14 +354,14 @@ export function ProductManagement() {
                 </p>
             </div>
 
-            <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="filter-toolbar">
+                <div className="filter-controls">
                     <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>Filter by category:</span>
                     <Select
                         placeholder="All categories"
                         allowClear
+                        className="filter-select"
                         style={{
-                            width: 240,
                             borderRadius: '8px',
                             background: 'rgba(255, 255, 255, 0.8)',
                             backdropFilter: 'blur(5px)',
@@ -498,14 +498,14 @@ export function ProductManagement() {
                     }
                 }}
             >
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', marginTop: '24px' }}>
+                <div className="modal-inner-grid">
                     <Form
                         form={form}
                         layout="vertical"
                         onFinish={handleSubmit}
                         onValuesChange={(_changedValues, allValues) => setFormValues(allValues)}
                     >
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div className="form-grid-2col">
                             <Form.Item
                                 name="name"
                                 label={
@@ -563,7 +563,7 @@ export function ProductManagement() {
                             />
                         </Form.Item>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                        <div className="form-grid-3col">
                             <Form.Item
                                 name="line1"
                                 label={

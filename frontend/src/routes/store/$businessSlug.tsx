@@ -248,10 +248,10 @@ function StorePage() {
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+            <div className="store-content">
                 {/* Header Section */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div className="store-header-controls">
+                    <div className="store-header-row">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                             <Typography.Title
                                 level={1}
@@ -304,7 +304,7 @@ function StorePage() {
                     </div>
 
                     {/* Category Dropdown */}
-                    <div style={{ width: '300px' }}>
+                    <div className="store-category-select">
                         <Select
                             placeholder={t.selectCategory}
                             value={categoryId}
@@ -321,7 +321,7 @@ function StorePage() {
                     </div>
 
                     {/* Search Input */}
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '400px' }}>
+                    <div className="store-search-input">
                         <Input
                             placeholder="Search products..."
                             value={search || ''}
@@ -364,11 +364,12 @@ function StorePage() {
                         display: 'grid',
                         gridTemplateColumns: `repeat(auto-fill, minmax(${isSingleColumn ? '100%' : '280px'}, 1fr))`,
                         gap: '20px',
+                        justifyContent: 'center',
                         paddingBottom: '120px',
                     }}
                 >
                     {products?.map((product: any) => (
-                        <div key={product.id} style={{ position: 'relative' }}>
+                        <div key={product.id} style={{ position: 'relative', margin: 'auto' }}>
                             <ProductCard
                                 name={product.name}
                                 price={parseFloat(product.price)}
