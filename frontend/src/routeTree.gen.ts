@@ -17,6 +17,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as StoreBusinessSlugRouteImport } from './routes/store/$businessSlug'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardProductsRouteImport } from './routes/dashboard/products'
+import { Route as DashboardImportRouteImport } from './routes/dashboard/import'
 import { Route as DashboardCategoriesRouteImport } from './routes/dashboard/categories'
 
 const RegisterRoute = RegisterRouteImport.update({
@@ -59,6 +60,11 @@ const DashboardProductsRoute = DashboardProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardImportRoute = DashboardImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardCategoriesRoute = DashboardCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
+  '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/products': typeof DashboardProductsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/store/$businessSlug': typeof StoreBusinessSlugRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
+  '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/products': typeof DashboardProductsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/store/$businessSlug': typeof StoreBusinessSlugRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
+  '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/products': typeof DashboardProductsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/store/$businessSlug': typeof StoreBusinessSlugRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard/categories'
+    | '/dashboard/import'
     | '/dashboard/products'
     | '/dashboard/settings'
     | '/store/$businessSlug'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard/categories'
+    | '/dashboard/import'
     | '/dashboard/products'
     | '/dashboard/settings'
     | '/store/$businessSlug'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/dashboard/categories'
+    | '/dashboard/import'
     | '/dashboard/products'
     | '/dashboard/settings'
     | '/store/$businessSlug'
@@ -199,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProductsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/import': {
+      id: '/dashboard/import'
+      path: '/import'
+      fullPath: '/dashboard/import'
+      preLoaderRoute: typeof DashboardImportRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/categories': {
       id: '/dashboard/categories'
       path: '/categories'
@@ -211,6 +230,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
+  DashboardImportRoute: typeof DashboardImportRoute
   DashboardProductsRoute: typeof DashboardProductsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -218,6 +238,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCategoriesRoute: DashboardCategoriesRoute,
+  DashboardImportRoute: DashboardImportRoute,
   DashboardProductsRoute: DashboardProductsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardIndexRoute: DashboardIndexRoute,

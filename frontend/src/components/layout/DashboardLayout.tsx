@@ -8,6 +8,7 @@ import {
     SettingOutlined,
     MenuOutlined,
     CloseOutlined,
+    ImportOutlined,
 } from '@ant-design/icons';
 import { authService } from '../../services/auth.service';
 import { useState, useEffect } from 'react';
@@ -62,6 +63,15 @@ export function DashboardLayout() {
             label: 'Categories',
             onClick: () => {
                 navigate({ to: '/dashboard/categories' });
+                if (isMobile) setSidebarCollapsed(true);
+            },
+        },
+        {
+            key: '/dashboard/import',
+            icon: <ImportOutlined className="text-lg" />,
+            label: 'Smart Import',
+            onClick: () => {
+                navigate({ to: '/dashboard/import' });
                 if (isMobile) setSidebarCollapsed(true);
             },
         },

@@ -36,9 +36,10 @@ model Business {
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
 
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categories Category[]
-  products   Product[]
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories       Category[]
+  products         Product[]
+  smartImportJobs  SmartImportJob[]
 
   @@map("businesses")
 }
@@ -90,4 +91,28 @@ model ProductEmbedding {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_embeddings")
+}
+
+// ─── Smart Import ────────────────────────────────────────────────────────────
+
+enum ImportStatus {
+  UPLOADED
+  PROCESSING
+  READY_FOR_REVIEW
+  COMPLETED
+  FAILED
+}
+
+model SmartImportJob {
+  id         String       @id @default(uuid())
+  businessId String       @map("business_id")
+  fileUrl    String       @map("file_url")
+  status     ImportStatus @default(UPLOADED)
+  resultJson Json?        @map("result_json")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("smart_import_jobs")
 }

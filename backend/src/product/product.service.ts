@@ -16,11 +16,13 @@ export class ProductService {
 
     async create(businessId: string, createProductDto: CreateProductDto) {
         const { categoryId, ...productData } = createProductDto;
+        console.log("🪵 ~ ProductService ~ create ~ productData:", productData)
 
         // Verify category belongs to business
         const category = await this.prisma.category.findFirst({
             where: { id: categoryId, businessId },
         });
+        console.log("🪵 ~ ProductService ~ create ~ categoryId:", categoryId)
 
         if (!category) {
             throw new BadRequestException('Category not found or does not belong to your business');

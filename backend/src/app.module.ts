@@ -8,6 +8,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { StoreModule } from './store/store.module';
 import { BusinessModule } from './business/business.module';
 import { SearchModule } from './search/search.module';
+import { SmartImportModule } from './smart-import/smart-import.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SearchModule } from './search/search.module';
     StoreModule,
     BusinessModule,
     SearchModule,
+    SmartImportModule,
   ],
 })
 export class AppModule { }
