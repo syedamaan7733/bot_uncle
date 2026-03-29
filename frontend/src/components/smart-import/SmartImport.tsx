@@ -58,6 +58,13 @@ function confidenceBadge(confidence: number) {
     return <Tag color="red">{Math.round(confidence * 100)}%</Tag>;
 }
 
+function isCatalogUploadFile(file: File): boolean {
+    if (file.type.startsWith('image/')) return true;
+    if (file.type === 'application/pdf') return true;
+    if (file.name.toLowerCase().endsWith('.pdf')) return true;
+    return false;
+}
+
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export function SmartImport() {
@@ -94,7 +101,7 @@ export function SmartImport() {
                     setStep('review');
                 } else if (job.status === 'FAILED') {
                     clearInterval(pollingRef.current!);
-                    setErrorMsg('AI processing failed. Please try again with a clearer image.');
+                    setErrorMsg('AI processing failed. Please try again with a clearer catalog file.');
                     setStep('idle');
                 }
             } catch {
@@ -107,7 +114,7 @@ export function SmartImport() {
 
     const handleUpload = async () => {
         const rawFile = fileList[0]?.originFileObj;
-        if (!rawFile) { message.warning('Please select an image first'); return; }
+        if (!rawFile) { message.warning('Please select a catalog file first'); return; }
         setErrorMsg(null);
         setStep('uploading');
         try {
@@ -150,23 +157,22 @@ export function SmartImport() {
         setStep('importing');
 
         const payload: ConfirmProduct[] = products.map((p) => {
-            if (!p.categoryId && p._newCategoryName) {
-                // New category flow: backend will create it
-                return {
-                    name: p.name,
-                    price: p.price,
-                    line1: p.line1 || null,
-                    line2: p.line2 || null,
-                    line3: p.line3 || null,
-                    newCategoryName: p._newCategoryName.trim(),
-                };
-            }
-            return {
+            const base = {
                 name: p.name,
                 price: p.price,
                 line1: p.line1 || null,
                 line2: p.line2 || null,
                 line3: p.line3 || null,
+                ...(p.imageUrls?.length ? { imageUrls: p.imageUrls } : {}),
+            };
+            if (!p.categoryId && p._newCategoryName) {
+                return {
+                    ...base,
+                    newCategoryName: p._newCategoryName.trim(),
+                };
+            }
+            return {
+                ...base,
                 categoryId: p.categoryId!,
             };
         });
@@ -206,6 +212,28 @@ export function SmartImport() {
     // ── Table columns ─────────────────────────────────────────────────────────
 
     const reviewColumns = [
+        {
+            title: 'Image',
+            key: 'image',
+            width: 72,
+            align: 'center' as const,
+            render: (_: any, record: EditableProduct) =>
+                record.imageUrls?.[0] ? (
+                    <img
+                        src={record.imageUrls[0]}
+                        alt=""
+                        style={{
+                            width: 48,
+                            height: 48,
+                            objectFit: 'cover',
+                            borderRadius: 4,
+                            border: '1px solid #f0f0f0',
+                        }}
+                    />
+                ) : (
+                    <span style={{ color: '#bfbfbf', fontSize: 12 }}>—</span>
+                ),
+        },
         {
             title: 'Product Name',
             key: 'name',
@@ -401,11 +429,14 @@ export function SmartImport() {
     const draggerProps: UploadProps = {
         name: 'image',
         multiple: false,
-        accept: 'image/*',
+        accept: 'image/*,.pdf,application/pdf',
         fileList,
         beforeUpload: (file) => {
-            if (!file.type.startsWith('image/')) { message.error('Only image files accepted'); return Upload.LIST_IGNORE; }
-            if (file.size > 10 * 1024 * 1024) { message.error('Image must be < 10MB'); return Upload.LIST_IGNORE; }
+            if (!isCatalogUploadFile(file)) {
+                message.error('Only image or PDF files are accepted');
+                return Upload.LIST_IGNORE;
+            }
+            if (file.size > 50 * 1024 * 1024) { message.error('File must be under 50MB'); return Upload.LIST_IGNORE; }
             return false;
         },
         onChange: ({ fileList: fl }) => setFileList(fl.slice(-1)),
@@ -415,7 +446,7 @@ export function SmartImport() {
     // ── Step indicator ────────────────────────────────────────────────────────
 
     const stepItems = [
-        { title: 'Upload', description: 'Select catalog image' },
+        { title: 'Upload', description: 'Select catalog image or PDF' },
         { title: 'AI Processing', description: 'Extracting products' },
         { title: 'Review & Edit', description: 'Verify extracted data' },
         { title: 'Import', description: 'Create products' },
@@ -443,7 +474,7 @@ export function SmartImport() {
                     Smart Import
                 </h1>
                 <p style={{ fontSize: '14px', color: 'rgba(128, 0, 0, 0.7)', margin: 0, lineHeight: '1.4' }}>
-                    Upload a product catalog image and let AI extract your products automatically.
+                    Upload a catalog image or PDF and let AI extract your products automatically.
                 </p>
             </div>
 
@@ -470,10 +501,10 @@ export function SmartImport() {
                             <InboxOutlined style={{ color: '#800000', fontSize: '48px' }} />
                         </p>
                         <p style={{ fontSize: '16px', fontWeight: 600, color: '#800000', marginBottom: '4px' }}>
-                            Drop your catalog image here
+                            Drop your catalog image or PDF here
                         </p>
                         <p style={{ color: 'rgba(128, 0, 0, 0.6)', fontSize: '13px' }}>
-                            Supports JPEG, PNG, WebP · Max 10MB
+                            JPEG, PNG, WebP, PDF · Max 50MB
                         </p>
                     </Dragger>
                     <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>

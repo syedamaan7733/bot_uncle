@@ -46,11 +46,16 @@ export class SmartImportController {
     @UseInterceptors(
         FileInterceptor('image', {
             storage: multer.memoryStorage(),
-            limits: { fileSize: 10 * 1024 * 1024 }, // 10MB for catalogs
+            limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for catalogs
             fileFilter: (_req, file, cb) => {
-                if (!file.mimetype.startsWith('image/')) {
+                const ok =
+                    file.mimetype.startsWith('image/') ||
+                    file.mimetype === 'application/pdf';
+                if (!ok) {
                     return cb(
-                        new BadRequestException('Only image files are allowed'),
+                        new BadRequestException(
+                            'Only image or PDF files are allowed',
+                        ),
                         false,
                     );
                 }
@@ -63,7 +68,7 @@ export class SmartImportController {
         @UploadedFile() file: Express.Multer.File,
     ) {
         if (!file) {
-            throw new BadRequestException('Image file is required');
+            throw new BadRequestException('A catalog file is required');
         }
         this.logger.log(`Received catalog upload: ${file.originalname} (${file.size} bytes)`);
         const businessId = await this.getBusinessId(req);

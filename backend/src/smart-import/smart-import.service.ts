@@ -71,8 +71,15 @@ export class SmartImportService {
 
     private async uploadToCloudinay(file: Express.Multer.File): Promise<string> {
         return new Promise((resolve, reject) => {
+            const isPdf = file.mimetype === 'application/pdf';
+            const options: Record<string, unknown> = { folder: 'catalog-imports' };
+            if (isPdf) {
+                options.resource_type = 'raw';
+            } else {
+                options.quality = 'auto';
+            }
             const stream = cloudinary.uploader.upload_stream(
-                { folder: 'catalog-imports', quality: 'auto' },
+                options,
                 (error, result) => {
                     if (error) return reject(error);
                     if (result) return resolve(result.secure_url);

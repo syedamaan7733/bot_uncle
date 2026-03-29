@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import re
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from openai import AsyncOpenAI
 
@@ -27,7 +27,11 @@ SYSTEM_PROMPT = (
 )
 
 
-async def parse_products(ocr_text: str, vision_description: str) -> List[ExtractedProduct]:
+async def parse_products(
+    ocr_text: str,
+    vision_description: str,
+    layout_context: Optional[Dict[str, Any]] = None,
+) -> List[ExtractedProduct]:
     """
     Uses GPT-4o-mini to extract structured products from OCR + vision text.
     Returns a list of ExtractedProduct (without categoryId — set by category_matcher).
@@ -41,6 +45,21 @@ async def parse_products(ocr_text: str, vision_description: str) -> List[Extract
         f"=== OCR TEXT ===\n{ocr_text}\n\n"
         f"=== VISUAL DESCRIPTION ===\n{vision_description}"
     )
+
+    if layout_context:
+        try:
+            compact = json.dumps(layout_context, ensure_ascii=False)
+            max_len = 8000
+            if len(compact) > max_len:
+                compact = compact[:max_len] + "\n...(truncated)"
+            combined_input += (
+                "\n\n=== LAYOUT CONTEXT (OPTIONAL) ===\n"
+                "Use this spatial hint only if it helps; do not invent products "
+                "not supported by OCR or the visual description.\n"
+                f"{compact}\n"
+            )
+        except (TypeError, ValueError) as exc:
+            logger.warning("layout_context could not be serialized — omitting: %s", exc)
 
     logger.info("Sending combined text to GPT-4o-mini for product extraction")
 

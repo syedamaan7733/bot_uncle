@@ -14,6 +14,8 @@ export interface ExtractedProduct {
     /** True when AI could not match any existing category — user must accept/reject the new category. */
     isNewCategory?: boolean;
     confidence: number;
+    /** Cropped product images from catalogue layout (optional). */
+    imageUrls?: string[];
 }
 
 export type ImportStatus =
