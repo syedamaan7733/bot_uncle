@@ -19,6 +19,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settin
 import { Route as DashboardProductsRouteImport } from './routes/dashboard/products'
 import { Route as DashboardImportRouteImport } from './routes/dashboard/import'
 import { Route as DashboardCategoriesRouteImport } from './routes/dashboard/categories'
+import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -70,12 +71,18 @@ const DashboardCategoriesRoute = DashboardCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardBillingRoute = DashboardBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/products': typeof DashboardProductsRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/products': typeof DashboardProductsRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/categories': typeof DashboardCategoriesRoute
   '/dashboard/import': typeof DashboardImportRoute
   '/dashboard/products': typeof DashboardProductsRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/dashboard/billing'
     | '/dashboard/categories'
     | '/dashboard/import'
     | '/dashboard/products'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/dashboard/billing'
     | '/dashboard/categories'
     | '/dashboard/import'
     | '/dashboard/products'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/register'
+    | '/dashboard/billing'
     | '/dashboard/categories'
     | '/dashboard/import'
     | '/dashboard/products'
@@ -225,10 +237,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCategoriesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
 interface DashboardRouteChildren {
+  DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardCategoriesRoute: typeof DashboardCategoriesRoute
   DashboardImportRoute: typeof DashboardImportRoute
   DashboardProductsRoute: typeof DashboardProductsRoute
@@ -237,6 +257,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardBillingRoute: DashboardBillingRoute,
   DashboardCategoriesRoute: DashboardCategoriesRoute,
   DashboardImportRoute: DashboardImportRoute,
   DashboardProductsRoute: DashboardProductsRoute,

@@ -2,6 +2,8 @@ import { Controller, Get, Param, Query, Post, UseInterceptors, UploadedFile } fr
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { StoreService } from './store.service';
+import { BillableAction } from '../billing/billing.decorator';
+import { BillingActions } from '../billing/billing.constants';
 
 // Note: This controller is public, so no @UseGuards(JwtAuthGuard)
 @Controller('store')
@@ -40,6 +42,9 @@ export class StoreController {
             callback(null, true);
         },
     }))
+    @BillableAction(BillingActions.IMAGE_SEARCH, {
+        actorFromStoreSlug: true,
+    })
     async searchByImage(
         @Param('slug') slug: string,
         @UploadedFile() file: Express.Multer.File,

@@ -18,7 +18,11 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  businesses Business[]
+  businesses      Business[]
+  usageLogs       UsageLog[]
+  userBalance     UserBalance?
+  pricingConfigs  PricingConfig[]
+  payments        Payment[]
 
   @@map("users")
 }
@@ -40,6 +44,10 @@ model Business {
   categories       Category[]
   products         Product[]
   smartImportJobs  SmartImportJob[]
+  usageLogs        UsageLog[]
+  userBalance      UserBalance?
+  pricingConfigs   PricingConfig[]
+  payments         Payment[]
 
   @@map("businesses")
 }
@@ -115,4 +123,107 @@ model SmartImportJob {
   business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@map("smart_import_jobs")
+}
+
+// ─── Billing / Usage (postpaid) ─────────────────────────────────────────────
+
+model UsageLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  businessId  String?  @map("business_id")
+  action      String
+  units       Float    @default(1)
+  costPerUnit Float    @map("cost_per_unit")
+  totalCost   Float    @map("total_cost")
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  @@index([businessId, createdAt])
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+  @@map("usage_logs")
+}
+
+model UserBalance {
+  id           String   @id @default(uuid())
+  userId       String?  @unique @map("user_id")
+  businessId   String?  @unique @map("business_id")
+  balance      Float    @default(0)
+  creditLimit  Float?   @map("credit_limit")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("user_balances")
+}
+
+model PricingConfig {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  businessId   String?  @map("business_id")
+  action       String
+  pricePerUnit Float    @map("price_per_unit")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, action])
+  @@unique([userId, action])
+  @@map("pricing_configs")
+}
+
+// ─── Payments (ledger / top-ups; balance credits on VERIFIED only) ─────────
+
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  FAILED
+}
+
+enum PaymentSource {
+  MANUAL
+  GATEWAY
+}
+
+model Payment {
+  id                   String         @id @default(uuid())
+  userId               String         @map("user_id")
+  businessId           String         @map("business_id")
+  amount               Float
+  currency             String         @default("INR")
+  remark               String?        @db.Text
+  image                String?        @map("image_url")
+  metadata             Json?
+  paymentType          String         @map("payment_type")
+  transactionDetails   Json?          @map("transaction_details")
+  status               PaymentStatus  @default(PENDING)
+  referenceCode        String?        @unique @map("reference_code")
+  gatewayProvider      String?        @map("gateway_provider")
+  gatewayTransactionId String?        @unique @map("gateway_transaction_id")
+  verifiedAt           DateTime?      @map("verified_at")
+  verifiedBy           String?        @map("verified_by")
+  rejectionReason      String?        @map("rejection_reason") @db.Text
+  failureReason        String?        @map("failure_reason") @db.Text
+  idempotencyKey       String?        @unique @map("idempotency_key")
+  processedAt          DateTime?      @map("processed_at")
+  source               PaymentSource  @default(MANUAL)
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+  deletedAt            DateTime?      @map("deleted_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("payments")
 }

@@ -6,17 +6,19 @@ import { CategoryModule } from '../category/category.module';
 import { ProductModule } from '../product/product.module';
 import { SearchModule } from '../search/search.module';
 import { HttpModule } from '@nestjs/axios';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
-    imports: [
-        PrismaModule,
-        HttpModule,
-        CategoryModule,
-        ProductModule,
-        SearchModule
-    ],
-    controllers: [WhatsappController],
-    providers: [WhatsappService],
-    exports: [WhatsappService],
+  imports: [
+    PrismaModule,
+    HttpModule,
+    CategoryModule,
+    ProductModule,
+    SearchModule,
+    BillingModule,
+  ],
+  controllers: [WhatsappController],
+  providers: [WhatsappService],
+  exports: [WhatsappService],
 })
-export class WhatsappModule { }
+export class WhatsappModule {}

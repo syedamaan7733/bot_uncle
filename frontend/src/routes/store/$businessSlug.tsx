@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../services/api';
-import { Spin, Result, Button, Select, Checkbox, Tooltip, Typography, Input, Upload } from 'antd';
+import { Spin, Result, Button, Select, Tooltip, Typography, Input, Upload } from 'antd';
 import { WhatsAppOutlined, GlobalOutlined, AppstoreOutlined, AppstoreFilled } from '@ant-design/icons';
 import BusinessBranding from '../../components/branding/BusinessBranding';
 import { ProductCard } from '../../components/products/ProductCard';

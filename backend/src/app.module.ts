@@ -9,6 +9,7 @@ import { StoreModule } from './store/store.module';
 import { BusinessModule } from './business/business.module';
 import { SearchModule } from './search/search.module';
 import { SmartImportModule } from './smart-import/smart-import.module';
+import { BillingModule } from './billing/billing.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { SmartImportModule } from './smart-import/smart-import.module';
       isGlobal: true,
     }),
     PrismaModule,
+    BillingModule,
     AuthModule,
     CategoryModule,
     ProductModule,
@@ -26,4 +28,4 @@ import { SmartImportModule } from './smart-import/smart-import.module';
     SmartImportModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

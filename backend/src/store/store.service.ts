@@ -1,111 +1,134 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SearchService } from '../search/search.service';
+import { BillingService } from '../billing/billing.service';
+import { BillingActions } from '../billing/billing.constants';
 
 @Injectable()
 export class StoreService {
-    constructor(
-        private prisma: PrismaService,
-        private searchService: SearchService,
-    ) { }
+  constructor(
+    private prisma: PrismaService,
+    private searchService: SearchService,
+    private readonly billing: BillingService,
+  ) {}
 
-    async getBusiness(slug: string) {
-        const business = await this.prisma.business.findUnique({
-            where: { slug },
-            select: {
-                id: true,
-                name: true,
-                slug: true,
-                whatsappNumber: true,
-                logoUrl: true,
-            },
-        });
+  async getBusiness(slug: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        whatsappNumber: true,
+        logoUrl: true,
+      },
+    });
 
-        if (!business) {
-            throw new NotFoundException('Store not found');
-        }
-
-        return business;
+    if (!business) {
+      throw new NotFoundException('Store not found');
     }
 
-    async getCategories(slug: string) {
-        const business = await this.prisma.business.findUnique({
-            where: { slug },
-        });
+    return business;
+  }
 
-        if (!business) {
-            throw new NotFoundException('Store not found');
-        }
+  async getCategories(slug: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { slug },
+    });
 
-        return this.prisma.category.findMany({
-            where: { businessId: business.id },
-            orderBy: { displayOrder: 'asc' },
-            include: {
-                _count: {
-                    select: { products: true },
-                },
-            },
-        });
+    if (!business) {
+      throw new NotFoundException('Store not found');
     }
 
-    async getProducts(slug: string, categoryId?: string, search?: string) {
-        const business = await this.prisma.business.findUnique({
-            where: { slug },
-        });
+    return this.prisma.category.findMany({
+      where: { businessId: business.id },
+      orderBy: { displayOrder: 'asc' },
+      include: {
+        _count: {
+          select: { products: true },
+        },
+      },
+    });
+  }
 
-        if (!business) {
-            throw new NotFoundException('Store not found');
-        }
+  async getProducts(slug: string, categoryId?: string, search?: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { slug },
+    });
 
-        // If search query provided, use semantic search
-        if (search && search.trim()) {
-            const searchResults = await this.searchService.search(business.id, search.trim(), categoryId);
-            return searchResults.map(result => result.product);
-        }
-
-        // Otherwise, return products with optional category filter
-        const where: any = {
-            businessId: business.id,
-            isActive: true,
-        };
-
-        if (categoryId) {
-            // Verify category belongs to business
-            const category = await this.prisma.category.findFirst({
-                where: { id: categoryId, businessId: business.id }
-            });
-            if (category) {
-                where.categoryId = categoryId;
-            }
-        }
-
-        return this.prisma.product.findMany({
-            where,
-            include: {
-                category: true,
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+    if (!business) {
+      throw new NotFoundException('Store not found');
     }
 
-    async searchByImage(slug: string, imageFile: Express.Multer.File, categoryId?: string) {
-        const business = await this.prisma.business.findUnique({
-            where: { slug },
-        });
-
-        if (!business) {
-            throw new NotFoundException('Store not found');
-        }
-
-        // Generate text description from image
-        const imageDescription = await this.searchService.generateImageDescriptionFromFile(imageFile);
-
-        // Search using the generated description
-        const searchResults = await this.searchService.search(business.id, imageDescription, categoryId);
-
-        return {
-            searchText: imageDescription,
-            products: searchResults.map(result => result.product),
-        };
+    // If search query provided, use semantic search
+    if (search && search.trim()) {
+      const searchResults = await this.searchService.search(
+        business.id,
+        search.trim(),
+        categoryId,
+      );
+      await this.billing.safeCharge({
+        businessId: business.id,
+        userId: business.userId,
+        action: BillingActions.AI_SEARCH,
+        units: 1,
+        metadata: { source: 'store_text_search' },
+      });
+      return searchResults.map((result) => result.product);
     }
+
+    // Otherwise, return products with optional category filter
+    const where: any = {
+      businessId: business.id,
+      isActive: true,
+    };
+
+    if (categoryId) {
+      // Verify category belongs to business
+      const category = await this.prisma.category.findFirst({
+        where: { id: categoryId, businessId: business.id },
+      });
+      if (category) {
+        where.categoryId = categoryId;
+      }
+    }
+
+    return this.prisma.product.findMany({
+      where,
+      include: {
+        category: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async searchByImage(
+    slug: string,
+    imageFile: Express.Multer.File,
+    categoryId?: string,
+  ) {
+    const business = await this.prisma.business.findUnique({
+      where: { slug },
+    });
+
+    if (!business) {
+      throw new NotFoundException('Store not found');
+    }
+
+    // Generate text description from image
+    const imageDescription =
+      await this.searchService.generateImageDescriptionFromFile(imageFile);
+
+    // Search using the generated description
+    const searchResults = await this.searchService.search(
+      business.id,
+      imageDescription,
+      categoryId,
+    );
+
+    return {
+      searchText: imageDescription,
+      products: searchResults.map((result) => result.product),
+    };
+  }
 }

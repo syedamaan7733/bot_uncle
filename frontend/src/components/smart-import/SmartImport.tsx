@@ -335,13 +335,21 @@ export function SmartImport() {
                         status={!selectValue ? 'error' : undefined}
                         filterOption={(input, option) => {
                             // Custom filter to match children text
-                            const text = option?.children;
+                            const text = option?.children as unknown;
                             if (typeof text === 'string') {
-                                return text.toLowerCase().includes(input.toLowerCase());
+                                return text
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase());
                             }
                             if (Array.isArray(text)) {
-                                const joined = (text as any[]).map(t => typeof t === 'string' ? t : '').join('');
-                                return joined.toLowerCase().includes(input.toLowerCase());
+                                const joined = text
+                                    .map((t) =>
+                                        typeof t === 'string' ? t : '',
+                                    )
+                                    .join('');
+                                return joined
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase());
                             }
                             return true;
                         }}
