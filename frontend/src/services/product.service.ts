@@ -31,12 +31,31 @@ export const productService = {
         await api.delete(`/products/${id}`);
     },
 
-    uploadImages: async (id: string, formData: FormData): Promise<string[]> => {
+    uploadImages: async (
+        id: string,
+        formData: FormData,
+        options?: { skipImageVision?: boolean },
+    ): Promise<string[]> => {
+        const params =
+            options?.skipImageVision === true ? { skipImageVision: 'true' } : {};
         const response = await api.post<string[]>(`/products/${id}/images`, formData, {
+            params,
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
+        return response.data;
+    },
+
+    /** Same vision caption used when indexing product embeddings (dashboard add flow). */
+    previewImageDescription: async (file: File): Promise<{ description: string }> => {
+        const formData = new FormData();
+        formData.append('image', file);
+        const response = await api.post<{ description: string }>(
+            '/products/image-description/preview',
+            formData,
+            { headers: { 'Content-Type': 'multipart/form-data' } },
+        );
         return response.data;
     },
 
