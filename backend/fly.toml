@@ -1,9 +1,9 @@
-# Fly.io app: https://fly.io/docs/reference/configuration/
+# Deploy from this directory: flyctl deploy --remote-only
+# Do not use `flyctl config save` when the app has zero Machines — it needs this file.
 app = "bot-uncle"
 primary_region = "iad"
 
 [build]
-  dockerfile = "backend/Dockerfile"
 
 [deploy]
   release_command = "npx prisma@5.22.0 migrate deploy"

@@ -1,16 +1,16 @@
-# Build from repository root (see fly.toml). Context is the repo root, not backend/.
+# Build context is the backend/ directory (deployment root for Fly).
 FROM node:22-alpine AS builder
 WORKDIR /app
 
 RUN apk add --no-cache python3 make g++
 
-COPY backend/package.json backend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY backend/prisma ./prisma
+COPY prisma ./prisma
 RUN npx prisma generate
 
-COPY backend/ .
+COPY . .
 RUN npm run build && npm prune --omit=dev
 
 FROM node:22-alpine AS runner
