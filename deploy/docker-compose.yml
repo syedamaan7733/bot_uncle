@@ -1,0 +1,67 @@
+# Run from this directory: docker compose up -d --build
+# Copy backend.env.example -> backend.env and smart-import.env.example -> smart-import.env first.
+# Copy Caddyfile.example -> Caddyfile and edit domain (or use :80 for HTTP-only testing).
+
+services:
+  smart-import:
+    build:
+      context: ../smart-import-service
+      dockerfile: Dockerfile
+    env_file: ./smart-import.env
+    restart: unless-stopped
+    expose:
+      - '8000'
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'python -c "import urllib.request; urllib.request.urlopen(\'http://127.0.0.1:8000/health\')"',
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 180s
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    env_file: ./backend.env
+    restart: unless-stopped
+    depends_on:
+      smart-import:
+        condition: service_healthy
+    expose:
+      - '3000'
+    volumes:
+      - backend_uploads:/app/uploads
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "fetch(\'http://127.0.0.1:3000/health/live\').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      # Optional: enable when you terminate TLS on EC2 (needs a hostname).
+      # - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  backend_uploads:
+  caddy_data:
+  caddy_config:

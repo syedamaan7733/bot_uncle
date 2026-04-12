@@ -25,6 +25,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./
 
+# Prisma CLI is devDependency; keep it only for `prisma migrate deploy` at container start.
+RUN npm install prisma@5.22.0 --omit=dev --no-save
+
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
