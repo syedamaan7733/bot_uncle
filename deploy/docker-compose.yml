@@ -12,11 +12,11 @@ services:
     expose:
       - '8000'
     healthcheck:
-    test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
-    interval: 30s
-    timeout: 15s
-    retries: 5
-    start_period: 180s
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 180s
 
   backend:
     build:
@@ -32,11 +32,11 @@ services:
     volumes:
       - backend_uploads:/app/uploads
     healthcheck:
-    test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-    interval: 15s
-    timeout: 5s
-    retries: 5
-    start_period: 90s
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
 
   caddy:
     image: caddy:2-alpine
