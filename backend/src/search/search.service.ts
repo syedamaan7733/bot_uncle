@@ -72,7 +72,10 @@ export class SearchService {
         }
     }
 
-    async indexProduct(productId: string) {
+    async indexProduct(
+        productId: string,
+        options?: { skipImageVisionDescription?: boolean },
+    ) {
         const product = await this.prisma.product.findUnique({
             where: { id: productId },
             include: { category: true },
@@ -88,8 +91,13 @@ export class SearchService {
       Description: ${product.line1 || ''} ${product.line2 || ''} ${product.line3 || ''}
     `.trim();
 
-        // If product has images, generate descriptions and add to searchable text
-        if (product.imageUrls && product.imageUrls.length > 0) {
+        // If product has images, optionally add a vision caption (same model as dashboard preview).
+        // Skip when the client already ran preview and merged text into line3 to avoid duplicate API calls.
+        if (
+            product.imageUrls &&
+            product.imageUrls.length > 0 &&
+            !options?.skipImageVisionDescription
+        ) {
             try {
                 const imageDescriptions = await Promise.all(
                     product.imageUrls.slice(0, 1).map(async (imageUrl: string) => {
@@ -110,6 +118,10 @@ export class SearchService {
             } catch (error) {
                 this.logger.warn('Failed to generate image descriptions', error);
             }
+        } else if (options?.skipImageVisionDescription && product.imageUrls?.length) {
+            this.logger.debug(
+                `indexProduct ${productId}: skipImageVisionDescription — embedding uses catalog text only`,
+            );
         }
 
         const embedding = await this.generateEmbedding(docText);

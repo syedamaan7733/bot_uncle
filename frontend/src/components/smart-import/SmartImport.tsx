@@ -302,7 +302,7 @@ export function SmartImport() {
             title: (
                 <span>
                     Category{' '}
-                    <Tooltip title="Select an existing category or create a new one. AI suggestions are highlighted in orange.">
+                    <Tooltip title="Select an existing category or create a new one. Click the AI suggestion above the field to apply it.">
                         <QuestionCircleOutlined style={{ color: '#999' }} />
                     </Tooltip>
                 </span>
@@ -318,10 +318,40 @@ export function SmartImport() {
                     selectValue = `__NEW__${record._newCategoryName}`;
                 }
 
-                // Temporary search state is stored per row to allow typing new categories
-                // We'll use onSearch to capture what they are typing
+                const suggestedName = (record.category || record.categorySuggestion || '').trim();
+                const suggestionInCatalog = suggestedName
+                    ? categories?.some(
+                          (c: { name: string }) =>
+                              c.name.toLowerCase() === suggestedName.toLowerCase(),
+                      )
+                    : true;
+                const appliedAsNew =
+                    !record.categoryId &&
+                    record._newCategoryName?.trim().toLowerCase() === suggestedName.toLowerCase();
+                const showAiChip =
+                    !record.categoryId &&
+                    !!suggestedName &&
+                    !suggestionInCatalog &&
+                    !appliedAsNew;
 
                 return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {showAiChip && (
+                            <button
+                                type="button"
+                                className="smart-import-ai-category-chip"
+                                onClick={() => {
+                                    updateProduct(record._key, 'categoryId', null);
+                                    updateProduct(record._key, '_newCategoryName', suggestedName);
+                                    updateProduct(record._key, '_rejectedNewCategory', false);
+                                }}
+                            >
+                                <Tag color="orange" style={{ margin: 0, fontSize: 10 }}>
+                                    ✨ AI Suggests
+                                </Tag>
+                                <span className="smart-import-ai-category-chip-label">{suggestedName}</span>
+                            </button>
+                        )}
                     <Select
                         showSearch
                         allowClear
@@ -386,26 +416,14 @@ export function SmartImport() {
                             </Select.Option>
                         )}
 
-                        {/* 2. Show the AI suggested category if it exists and hasn't been typed/created yet */}
-                        {(record.category || record.categorySuggestion) &&
-                            record._customSearch?.toLowerCase() !== (record.category || record.categorySuggestion)!.toLowerCase() &&
-                            !categories?.find((c: any) => c.name.toLowerCase() === (record.category || record.categorySuggestion)!.toLowerCase()) && (
-                                <Select.Option value={`__NEW__${record.category || record.categorySuggestion}`} label={record.category || record.categorySuggestion}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <Tag color="orange" style={{ margin: 0, fontSize: 10 }}>✨ AI Suggests</Tag>
-                                        <span style={{ fontWeight: 500, color: '#fa8c16' }}>{record.category || record.categorySuggestion}</span>
-                                    </div>
-                                </Select.Option>
-                            )}
-
-
-                        {/* 3. Show all existing categories */}
+                        {/* 2. Show all existing categories */}
                         {categories?.map((c: any) => (
                             <Select.Option key={c.id} value={c.id} label={c.name}>
                                 {c.name}
                             </Select.Option>
                         ))}
                     </Select>
+                    </div>
                 );
             },
         },
@@ -646,6 +664,46 @@ export function SmartImport() {
             <style>{`
                 .smart-import-new-cat-row td {
                     background: rgba(250, 140, 22, 0.05) !important;
+                }
+                .smart-import-ai-category-chip {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    width: 100%;
+                    padding: 6px 10px;
+                    border-radius: 8px;
+                    border: 1px solid rgba(250, 140, 22, 0.45);
+                    background: linear-gradient(
+                        110deg,
+                        rgba(255, 247, 230, 0.95) 0%,
+                        rgba(255, 255, 255, 0.98) 40%,
+                        rgba(255, 247, 230, 0.95) 80%
+                    );
+                    background-size: 200% 100%;
+                    cursor: pointer;
+                    text-align: left;
+                    animation: smart-import-ai-shimmer 2.2s ease-in-out infinite;
+                    transition: box-shadow 0.2s ease, transform 0.15s ease;
+                }
+                .smart-import-ai-category-chip:hover {
+                    box-shadow: 0 0 0 2px rgba(250, 140, 22, 0.25);
+                }
+                .smart-import-ai-category-chip:active {
+                    transform: scale(0.99);
+                }
+                .smart-import-ai-category-chip-label {
+                    font-weight: 600;
+                    font-size: 13px;
+                    color: #d46b08;
+                    flex: 1;
+                    min-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+                @keyframes smart-import-ai-shimmer {
+                    0% { background-position: 100% 0; }
+                    100% { background-position: -100% 0; }
                 }
             `}</style>
         </div>
