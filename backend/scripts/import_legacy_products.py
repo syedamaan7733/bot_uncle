@@ -32,6 +32,31 @@ def _normalize_text(value: Any) -> str:
     return str(value).strip()
 
 
+def _hr(char: str = "-", width: int = 78) -> str:
+    return char * width
+
+
+_COLOR_ENABLED = sys.stdout.isatty()
+_ANSI_RESET = "\033[0m"
+_ANSI_COLORS = {
+    "cyan": "\033[36m",
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "red": "\033[31m",
+    "magenta": "\033[35m",
+    "bold": "\033[1m",
+}
+
+
+def _c(text: str, color: str) -> str:
+    if not _COLOR_ENABLED:
+        return text
+    code = _ANSI_COLORS.get(color)
+    if not code:
+        return text
+    return f"{code}{text}{_ANSI_RESET}"
+
+
 def _build_headers(token: str) -> Dict[str, str]:
     return {
         "Authorization": f"Bearer {token}",
@@ -244,14 +269,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--sleep-ms",
         type=int,
-        default=0,
-        help="Delay between API calls in milliseconds (default: 0).",
+        default=2000,
+        help="Delay between API calls in milliseconds (default: 2000).",
     )
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=16,
-        help="Pause after every N successful uploads (default: 16).",
+        default=15,
+        help="Pause after every N successful uploads (default: 15).",
     )
     parser.add_argument(
         "--batch-rest-ms",
@@ -291,16 +316,24 @@ def main() -> int:
     failures: List[Dict[str, Any]] = []
     create_missing_categories = not args.no_create_missing_categories
 
-    print(
-        f"Starting import: {len(products)} source products | "
-        f"batch pause every {args.batch_size} uploads for {args.batch_rest_ms}ms"
-    )
+    print(_c(_hr("="), "cyan"))
+    print(_c("LEGACY PRODUCT IMPORT", "bold"))
+    print(_c(_hr("="), "cyan"))
+    print(f"Source products        : {len(products)}")
+    print(f"Auto-create categories : {create_missing_categories}")
+    print(f"Per upload delay (ms)  : {args.sleep_ms}")
+    print(f"Batch size             : {args.batch_size}")
+    print(f"Batch rest (ms)        : {args.batch_rest_ms}")
+    print(_c(_hr("="), "cyan"))
 
     for idx, source in enumerate(products, start=1):
         source_id = source.get("_id")
         article = _normalize_text(source.get("article"))
         source_category = _normalize_text(source.get("category"))
-        print(f"[{idx}/{len(products)}] source_id={source_id} article={article} category={source_category}")
+        print(
+            f"\n[{idx:>4}/{len(products)}] "
+            f"source_id={source_id} | article={article} | category={source_category}"
+        )
         if not source_category:
             failures.append(
                 {
@@ -319,13 +352,13 @@ def main() -> int:
                 category_id = f"DRY-RUN-{source_category}"
                 stats.created_categories += 1
                 category_map[category_key] = category_id
-                print(f"[DRY-RUN] would create category: {source_category}")
+                print(_c(f"  [DRY-RUN] category create -> {source_category}", "magenta"))
             else:
                 try:
                     category_id = create_category(api_base, headers, source_category)
                     category_map[category_key] = category_id
                     stats.created_categories += 1
-                    print(f"Created category: {source_category} -> {category_id}")
+                    print(_c(f"  [CATEGORY] created '{source_category}' -> {category_id}", "green"))
                 except Exception as exc:  # noqa: BLE001
                     failures.append(
                         {
@@ -355,7 +388,7 @@ def main() -> int:
             )
             stats.failed_products += 1
             continue
-        print(f"  -> generated variants: {len(variants)}")
+        print(f"  [VARIANTS] generated: {len(variants)}")
 
         for color_name, payload in variants:
             stats.generated_variants += 1
@@ -364,7 +397,7 @@ def main() -> int:
             key = (_normalize_text(payload.get("name")).lower(), category_id)
             if key in existing_pairs:
                 stats.skipped_duplicates += 1
-                print(f"     SKIP duplicate: {payload.get('name')}")
+                print(_c(f"     [SKIP] duplicate -> {payload.get('name')}", "yellow"))
                 continue
 
             if args.dry_run:
@@ -378,27 +411,28 @@ def main() -> int:
                 if status in (200, 201):
                     stats.created_products += 1
                     existing_pairs.add(key)
-                    print(
-                        f"     OK created: {payload.get('name')} "
-                        f"(color={color_name}, image={payload.get('imageUrls', [])[:1]})"
-                    )
+                    print(_c(
+                        f"     [UPLOAD {stats.created_products:>4}] [OK] "
+                        f"{payload.get('name')} | color={color_name} | "
+                        f"image={payload.get('imageUrls', [])[:1]}"
+                    , "green"))
                     if (
                         args.batch_size > 0
                         and args.batch_rest_ms > 0
                         and stats.created_products % args.batch_size == 0
                     ):
                         rest_s = args.batch_rest_ms / 1000.0
-                        print(
-                            f"Reached {stats.created_products} created products; resting for {rest_s:.1f}s..."
-                        )
+                        print(_c(
+                            f"     [PAUSE] reached {stats.created_products} uploads; "
+                            f"sleeping {rest_s:.1f}s..."
+                        , "yellow"))
                         time.sleep(rest_s)
-                        print("Resuming uploads.")
+                        print(_c("     [RESUME] continuing uploads.", "cyan"))
                 else:
                     stats.failed_products += 1
-                    print(
-                        f"     FAIL create: {payload.get('name')} "
-                        f"status={status} response={body}"
-                    )
+                    print(_c(
+                        f"     [FAIL] {payload.get('name')} | status={status} | response={body}"
+                    , "red"))
                     failures.append(
                         {
                             "sourceId": source_id,
@@ -409,13 +443,16 @@ def main() -> int:
                     )
                 time.sleep(max(args.sleep_ms, 0) / 1000.0)
 
-    print("\n=== Import Summary ===")
+    print(f"\n{_c(_hr('='), 'cyan')}")
+    print(_c("IMPORT SUMMARY", "bold"))
+    print(_c(_hr('='), "cyan"))
     print(f"source_products      : {stats.source_products}")
     print(f"generated_variants   : {stats.generated_variants}")
     print(f"created_products     : {stats.created_products}")
     print(f"skipped_duplicates   : {stats.skipped_duplicates}")
     print(f"created_categories   : {stats.created_categories}")
     print(f"failed_products      : {stats.failed_products}")
+    print(_c(_hr('='), "cyan"))
 
     if failures:
         failed_path = input_path.with_suffix(f"{input_path.suffix}.failed.json")

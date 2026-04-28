@@ -71,8 +71,8 @@ The script currently does this by default:
 - Category lookup by name:
   - use existing category if found
   - otherwise create category automatically
-- No per-item delay (`--sleep-ms 0`)
-- After every **16 successful uploads**, rest **30 seconds**
+- 2-second per-item delay (`--sleep-ms 2000`)
+- After every **15 successful uploads**, rest **30 seconds**
 
 ---
 
@@ -101,13 +101,13 @@ python3 backend/scripts/import_legacy_products.py \
   Preview payloads without creating products.
 
 - `--batch-size N`  
-  Rest interval trigger (default: `16`).
+  Rest interval trigger (default: `15`).
 
 - `--batch-rest-ms M`  
   Rest duration in milliseconds (default: `30000`).
 
 - `--sleep-ms X`  
-  Per-product delay in milliseconds (default: `0`).
+  Per-product delay in milliseconds (default: `2000`).
 
 - `--no-create-missing-categories`  
   Fail when category name is missing in DB instead of auto-creating.
@@ -132,7 +132,7 @@ The script prints:
 - source progress: `[current/total]`
 - generated variants count per source product
 - per product status:
-  - `OK created`
+  - `[UPLOAD X] OK created`
   - `SKIP duplicate`
   - `FAIL create`
 - pause/resume messages after each batch
