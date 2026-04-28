@@ -20,7 +20,7 @@ const toTitleCase = (str: string): string => {
 const translations = {
     en: {
         explore: "Explore",
-        selectCategory: "Select Category",
+        selectCategory: "All categories",
         showingResults: "Showing results for",
         noItems: "No items found for this category.",
         clickToChat: "Click to enquire on WhatsApp",
@@ -33,7 +33,7 @@ const translations = {
     },
     hi: {
         explore: "खोजें",
-        selectCategory: "श्रेणी चुनें",
+        selectCategory: "सभी श्रेणियाँ",
         showingResults: "परिणाम दिखाए जा रहे हैं",
         noItems: "इस श्रेणी के लिए कोई आइटम नहीं मिला।",
         clickToChat: "व्हाट्सएप पर पूछताछ करने के लिए क्लिक करें",
@@ -103,17 +103,7 @@ function StorePage() {
     // Effects
     useEffect(() => {
         setSelectedItems([]);
-    }, [categoryId]);
-
-    useEffect(() => {
-        if (categories && categories.length > 0 && !categoryId) {
-            // Set first category as default in URL
-            navigate({
-                search: { categoryId: categories[0].id, search },
-                replace: true
-            });
-        }
-    }, [categories, categoryId, navigate, search]);
+    }, [categoryId, search]);
 
     // Functions
     const toggleItemSelection = (item: any) => {
@@ -125,23 +115,26 @@ function StorePage() {
         }
     };
 
-    const handleCategoryChange = (value: string) => {
+    const handleCategoryChange = (value: string | undefined) => {
         navigate({
-            search: { categoryId: value, search },
-            replace: true
+            search: {
+                categoryId: value || undefined,
+                search,
+            },
+            replace: true,
         });
     };
 
     const handleSearchChange = (value: string) => {
         if (value.trim()) {
             navigate({
-                search: { categoryId, search: value.trim() },
-                replace: true
+                search: { categoryId: undefined, search: value.trim() },
+                replace: true,
             });
         } else {
             navigate({
-                search: { categoryId, search: undefined },
-                replace: true
+                search: { categoryId: undefined, search: undefined },
+                replace: true,
             });
         }
     };
@@ -159,8 +152,8 @@ function StorePage() {
 
             const { searchText } = res.data;
             navigate({
-                search: { categoryId, search: searchText },
-                replace: true
+                search: { categoryId: undefined, search: searchText },
+                replace: true,
             });
         } catch (error) {
             console.error('Image search failed:', error);
@@ -178,7 +171,7 @@ function StorePage() {
         if (lang === "hi") {
             message = `नमस्ते, मैं इस प्रोडक्ट के बारे में जानकारी चाहता हूँ।\n${t.articleLabel}: ${item.name}\n${t.categoryLabel}: ${item.category.name}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}`;
         } else {
-            message = `Hello, I am interested in this product:\nArticle: ${item.name}\nCategory: ${categoryId}\nImage: ${item.imageUrls?.[0] || 'N/A'}`;
+            message = `Hello, I am interested in this product:\nArticle: ${item.name}\nCategory: ${item.category?.name ?? ''}\nImage: ${item.imageUrls?.[0] || 'N/A'}`;
         }
 
         const url = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
@@ -191,9 +184,9 @@ function StorePage() {
 
         selectedItems.forEach((item, index) => {
             if (lang === "hi") {
-                message += `${index + 1}. ${t.articleLabel}: ${item.name}, ${t.categoryLabel}: ${categoryId}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}\n\n`;
+                message += `${index + 1}. ${t.articleLabel}: ${item.name}, ${t.categoryLabel}: ${item.category?.name ?? ''}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}\n\n`;
             } else {
-                message += `${index + 1}. ${t.articleLabel}: ${item.name}, ${t.categoryLabel}: ${categoryId}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}\n\n`;
+                message += `${index + 1}. ${t.articleLabel}: ${item.name}, ${t.categoryLabel}: ${item.category?.name ?? ''}\n${t.imageLabel}: ${item.imageUrls?.[0] || 'N/A'}\n\n`;
             }
         });
 
@@ -307,6 +300,7 @@ function StorePage() {
                     <div className="store-category-select">
                         <Select
                             placeholder={t.selectCategory}
+                            allowClear
                             value={categoryId}
                             onChange={handleCategoryChange}
                             style={{ width: '100%' }}
@@ -406,7 +400,7 @@ function StorePage() {
                         </div>
                     ))}
 
-                    {!loadingProducts && products?.length === 0 && categoryId && (
+                    {!loadingProducts && products?.length === 0 && (
                         <div style={{ textAlign: 'center', marginTop: '48px', padding: '48px' }}>
                             {business?.logoUrl ? (
                                 <img
@@ -442,7 +436,9 @@ function StorePage() {
                                 {t.noItems}
                             </Typography.Title>
                             <Typography.Text style={{ fontSize: '14px', color: 'rgba(128, 0, 0, 0.6)' }}>
-                                Try selecting a different category
+                                {search
+                                    ? 'Try a different search or category'
+                                    : 'Try a different category or add products to your store'}
                             </Typography.Text>
                         </div>
                     )}

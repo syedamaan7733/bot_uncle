@@ -5,8 +5,12 @@ installed or fully compatible with the local Python version.
 
 from __future__ import annotations
 
+import os
 import sys
 import types
+
+# ASGI lifespan in app.main pre-loads LayoutLMv3; avoid Hugging Face download during tests.
+os.environ.setdefault("LAYOUT_WARMUP", "false")
 
 
 def _ensure_google_vision_stub() -> None:

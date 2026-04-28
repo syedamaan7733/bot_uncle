@@ -11,8 +11,11 @@ import {
   Query,
   UseInterceptors,
   UploadedFiles,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -54,6 +57,32 @@ export class ProductController {
     return this.productService.findAll(businessId, categoryId);
   }
 
+  @Post('image-description/preview')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: multer.memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, callback) => {
+        if (!file.mimetype.startsWith('image/')) {
+          callback(new Error('Only image files are allowed'), false);
+          return;
+        }
+        callback(null, true);
+      },
+    }),
+  )
+  @BillableAction(BillingActions.AI_SEARCH)
+  async previewImageDescription(
+    @Request() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    await this.getBusinessId(req);
+    if (!file) {
+      throw new BadRequestException('No image file provided');
+    }
+    return this.productService.previewImageDescription(file);
+  }
+
   @Get(':id')
   async findOne(@Request() req, @Param('id') id: string) {
     const businessId = await this.getBusinessId(req);
@@ -82,13 +111,18 @@ export class ProductController {
     @Request() req,
     @Param('id') id: string,
     @UploadedFiles() files: any[],
+    @Query('skipImageVision') skipImageVision?: string,
   ) {
     if (!files || files.length === 0) {
       throw new Error('No image files provided');
     }
 
     const businessId = await this.getBusinessId(req);
-    return this.productService.uploadImages(id, businessId, files);
+    const skipVision =
+      skipImageVision === 'true' || skipImageVision === '1';
+    return this.productService.uploadImages(id, businessId, files, {
+      skipImageVisionDescription: skipVision,
+    });
   }
 
   @Delete(':id/images')

@@ -13,6 +13,7 @@ pydantic>=2.6.0
 cloudinary>=1.36.0
 # LayoutLMv3 (optional layout analysis — service falls back if deps/model unavailable)
 torch>=2.1.0
-transformers>=4.40.0
+# LayoutLMv3: transformers 5.x Hub resolution can fail on LayoutLMv3Processor (preprocessor metadata).
+transformers>=4.40.0,<5
 accelerate>=0.27.0
 safetensors>=0.4.0

@@ -115,7 +115,18 @@ export class ProductService {
         });
     }
 
-    async uploadImages(id: string, businessId: string, imageFiles: any[]): Promise<string[]> {
+    /** Vision caption used for the same embedding pipeline as indexProduct (before product exists). */
+    async previewImageDescription(file: Express.Multer.File): Promise<{ description: string }> {
+        const description = await this.searchService.generateImageDescriptionFromFile(file);
+        return { description: description?.trim() ?? '' };
+    }
+
+    async uploadImages(
+        id: string,
+        businessId: string,
+        imageFiles: any[],
+        options?: { skipImageVisionDescription?: boolean },
+    ): Promise<string[]> {
         // Verify product exists and belongs to business
         const product = await this.findOne(id, businessId);
 
@@ -150,7 +161,11 @@ export class ProductService {
             });
 
             // Re-index for search
-            this.searchService.indexProduct(id).catch(err => console.error('Indexing failed', err));
+            this.searchService
+                .indexProduct(id, {
+                    skipImageVisionDescription: options?.skipImageVisionDescription,
+                })
+                .catch(err => console.error('Indexing failed', err));
 
             return imageUrls;
         } catch (error) {
