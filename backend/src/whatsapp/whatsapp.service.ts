@@ -6,6 +6,7 @@ import { lastValueFrom } from 'rxjs';
 import { SearchService } from '../search/search.service';
 import { BillingService } from '../billing/billing.service';
 import { BillingActions } from '../billing/billing.constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class WhatsappService {
@@ -16,7 +17,8 @@ export class WhatsappService {
     private httpService: HttpService,
     private searchService: SearchService,
     private readonly billing: BillingService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) { }
 
   async processWebhook(parsedData: any) {
     const { from, type, businessPhoneNumberId, message } = parsedData;
@@ -244,19 +246,20 @@ export class WhatsappService {
 
     let message = `I found top ${searchResults.length} products matching your image:\n\n`;
 
+    const frontendUrl = this.configService.get('FRONTEND_URL');
     topResults.forEach((result, index) => {
       const product = result.product;
       message += `${index + 1}. ${product.name}\n`;
       message += `   💰 ${product.price}\n`;
       if (product.line1) message += `   📝 ${product.line1}\n`;
-      message += `   � Product: https://your-domain.com/store/${business.slug}?search=${encodeURIComponent(product.name)}\n\n`;
+      message += `   � Product: ${frontendUrl}/store/${business.slug}?search=${encodeURIComponent(product.name)}\n\n`;
     });
 
     if (searchResults.length > 5) {
       message += `... and ${searchResults.length - 5} more products.\n\n\n\n\n`;
     }
 
-    message += `🔍 View all similar products: https://your-domain.com/store/${business.slug}?search=${encodeURIComponent(description)}\n\n`;
+    message += `🔍 View all similar products: ${frontendUrl}/store/${business.slug}?search=${encodeURIComponent(description)}\n\n`;
     message += `Image description: "${description}"\n\n`;
     message += 'Would you like to see more products or browse by category?';
 
