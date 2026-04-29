@@ -31,7 +31,7 @@ import {
 import { productService } from '../../services/product.service';
 import { categoryService } from '../../services/category.service';
 import { cloudinaryService } from '../../services/cloudinary.service';
-import type { Product, CreateProductDto, UpdateProductDto } from '../../types/product';
+import type { Product, CreateProductDto, } from '../../types/product';
 import type { UploadFile, UploadProps } from 'antd/es/upload/interface';
 
 export function ProductManagement() {
@@ -80,32 +80,32 @@ export function ProductManagement() {
 
     const previewImageUrls = getPreviewImageUrls();
 
-    const createMutation = useMutation({
-        mutationFn: productService.create,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-            message.success('Product created successfully');
-            handleCloseModal();
-        },
-        onError: (error: any) => {
-            message.error(error.response?.data?.message || 'Failed to create product');
-        },
-    });
+    // const createMutation = useMutation({
+    //     mutationFn: productService.create,
+    //     onSuccess: () => {
+    //         queryClient.invalidateQueries({ queryKey: ['products'] });
+    //         queryClient.invalidateQueries({ queryKey: ['categories'] });
+    //         message.success('Product created successfully');
+    //         handleCloseModal();
+    //     },
+    //     onError: (error: any) => {
+    //         message.error(error.response?.data?.message || 'Failed to create product');
+    //     },
+    // });
 
-    const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: UpdateProductDto }) =>
-            productService.update(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-            message.success('Product updated successfully');
-            handleCloseModal();
-        },
-        onError: (error: any) => {
-            message.error(error.response?.data?.message || 'Failed to update product');
-        },
-    });
+    // const updateMutation = useMutation({
+    //     mutationFn: ({ id, data }: { id: string; data: UpdateProductDto }) =>
+    //         productService.update(id, data),
+    //     onSuccess: () => {
+    //         queryClient.invalidateQueries({ queryKey: ['products'] });
+    //         queryClient.invalidateQueries({ queryKey: ['categories'] });
+    //         message.success('Product updated successfully');
+    //         handleCloseModal();
+    //     },
+    //     onError: (error: any) => {
+    //         message.error(error.response?.data?.message || 'Failed to update product');
+    //     },
+    // });
 
     const deleteMutation = useMutation({
         mutationFn: productService.delete,
@@ -576,267 +576,267 @@ export function ProductManagement() {
                 }}
             >
                 <Spin spinning={uploading} size="large">
-                <div className="modal-inner-grid">
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={handleSubmit}
-                        onValuesChange={(changedValues, allValues) => {
-                            setFormValues(allValues);
-                            if ('line3' in changedValues && !line3ProgrammaticUpdateRef.current) {
-                                setLine3AiHint(false);
-                                setLine3AiPulse(false);
-                            }
-                        }}
-                    >
-                        <div className="form-grid-2col">
-                            <Form.Item
-                                name="name"
-                                label={
-                                    <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
-                                        Product Name
-                                    </span>
+                    <div className="modal-inner-grid">
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            onFinish={handleSubmit}
+                            onValuesChange={(changedValues, allValues) => {
+                                setFormValues(allValues);
+                                if ('line3' in changedValues && !line3ProgrammaticUpdateRef.current) {
+                                    setLine3AiHint(false);
+                                    setLine3AiPulse(false);
                                 }
-                                rules={[{ required: true, message: 'Please enter product name' }]}
-                            >
-                                <Input
-                                    placeholder="e.g., Nike Air Max"
-                                    size="large"
-                                    style={{ borderRadius: '8px' }}
-                                />
-                            </Form.Item>
-
-                            <Form.Item
-                                name="categoryId"
-                                label={
-                                    <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
-                                        Category
-                                    </span>
-                                }
-                                rules={[{ required: true, message: 'Please select a category' }]}
-                            >
-                                <Select
-                                    placeholder="Select category"
-                                    size="large"
-                                    style={{ borderRadius: '8px' }}
+                            }}
+                        >
+                            <div className="form-grid-2col">
+                                <Form.Item
+                                    name="name"
+                                    label={
+                                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
+                                            Product Name
+                                        </span>
+                                    }
+                                    rules={[{ required: true, message: 'Please enter product name' }]}
                                 >
-                                    {categories?.map((cat: any) => (
-                                        <Select.Option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </Select.Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </div>
+                                    <Input
+                                        placeholder="e.g., Nike Air Max"
+                                        size="large"
+                                        style={{ borderRadius: '8px' }}
+                                    />
+                                </Form.Item>
 
-                        <Form.Item
-                            name="price"
-                            label={
-                                <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
-                                    Price (₹)
-                                </span>
-                            }
-                            rules={[{ required: true, message: 'Please enter price' }]}
-                        >
-                            <InputNumber
-                                min={0}
-                                placeholder="0"
-                                style={{ width: '100%', borderRadius: '8px' }}
-                                size="large"
-                                formatter={(value) => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            />
-                        </Form.Item>
+                                <Form.Item
+                                    name="categoryId"
+                                    label={
+                                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
+                                            Category
+                                        </span>
+                                    }
+                                    rules={[{ required: true, message: 'Please select a category' }]}
+                                >
+                                    <Select
+                                        placeholder="Select category"
+                                        size="large"
+                                        style={{ borderRadius: '8px' }}
+                                    >
+                                        {categories?.map((cat: any) => (
+                                            <Select.Option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </Select.Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </div>
 
-                        <Form.Item
-                            label={
-                                <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
-                                    Product image
-                                </span>
-                            }
-                        >
-                            <Upload
-                                customRequest={customUploadRequest}
-                                fileList={fileList}
-                                onChange={handleFileChange}
-                                onRemove={handleFileRemove}
-                                listType="picture-card"
-                                accept="image/*"
-                                disabled={uploading || describingImage}
-                                style={{
-                                    borderRadius: '8px',
-                                }}
+                            <Form.Item
+                                name="price"
+                                label={
+                                    <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
+                                        Price (₹)
+                                    </span>
+                                }
+                                rules={[{ required: true, message: 'Please enter price' }]}
                             >
-                                {fileList.length >= 1 ? null : (
-                                    <div>
-                                        {uploading || describingImage ? <LoadingOutlined /> : <UploadOutlined />}
-                                        <div style={{ marginTop: 8 }}>
-                                            {describingImage ? 'Analyzing image…' : 'Upload Image'}
+                                <InputNumber
+                                    min={0}
+                                    placeholder="0"
+                                    style={{ width: '100%', borderRadius: '8px' }}
+                                    size="large"
+                                    formatter={(value) => `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label={
+                                    <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
+                                        Product image
+                                    </span>
+                                }
+                            >
+                                <Upload
+                                    customRequest={customUploadRequest}
+                                    fileList={fileList}
+                                    onChange={handleFileChange}
+                                    onRemove={handleFileRemove}
+                                    listType="picture-card"
+                                    accept="image/*"
+                                    disabled={uploading || describingImage}
+                                    style={{
+                                        borderRadius: '8px',
+                                    }}
+                                >
+                                    {fileList.length >= 1 ? null : (
+                                        <div>
+                                            {uploading || describingImage ? <LoadingOutlined /> : <UploadOutlined />}
+                                            <div style={{ marginTop: 8 }}>
+                                                {describingImage ? 'Analyzing image…' : 'Upload Image'}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </Upload>
-                        </Form.Item>
-
-                        <div className="form-grid-3col">
-                            <Form.Item
-                                name="line1"
-                                label={
-                                    <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
-                                        Description Line 1
-                                    </span>
-                                }
-                            >
-                                <Input
-                                    placeholder="Short description"
-                                    size="large"
-                                    style={{ borderRadius: '8px' }}
-                                />
+                                    )}
+                                </Upload>
                             </Form.Item>
 
-                            <Form.Item
-                                name="line2"
-                                label={
-                                    <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
-                                        Description Line 2
-                                    </span>
-                                }
-                            >
-                                <Input
-                                    placeholder="Additional details"
-                                    size="large"
-                                    style={{ borderRadius: '8px' }}
-                                />
-                            </Form.Item>
+                            <div className="form-grid-3col">
+                                <Form.Item
+                                    name="line1"
+                                    label={
+                                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
+                                            Description Line 1
+                                        </span>
+                                    }
+                                >
+                                    <Input
+                                        placeholder="Short description"
+                                        size="large"
+                                        style={{ borderRadius: '8px' }}
+                                    />
+                                </Form.Item>
 
-                            <Form.Item
-                                name="line3"
-                                label={
-                                    <span
-                                        style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: 10,
-                                            flexWrap: 'wrap',
-                                            fontSize: '16px',
-                                            fontWeight: 500,
-                                            color: '#800000',
-                                        }}
-                                    >
-                                        Description Line 3
-                                        {line3AiHint && (
-                                            <Tag
-                                                color="volcano"
-                                                style={{
-                                                    margin: 0,
-                                                    fontSize: 11,
-                                                    fontWeight: 600,
-                                                    letterSpacing: '0.02em',
-                                                    borderRadius: 6,
+                                <Form.Item
+                                    name="line2"
+                                    label={
+                                        <span style={{ fontSize: '16px', fontWeight: 500, color: '#800000' }}>
+                                            Description Line 2
+                                        </span>
+                                    }
+                                >
+                                    <Input
+                                        placeholder="Additional details"
+                                        size="large"
+                                        style={{ borderRadius: '8px' }}
+                                    />
+                                </Form.Item>
+
+                                <Form.Item
+                                    name="line3"
+                                    label={
+                                        <span
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 10,
+                                                flexWrap: 'wrap',
+                                                fontSize: '16px',
+                                                fontWeight: 500,
+                                                color: '#800000',
+                                            }}
+                                        >
+                                            Description Line 3
+                                            {line3AiHint && (
+                                                <Tag
+                                                    color="volcano"
+                                                    style={{
+                                                        margin: 0,
+                                                        fontSize: 11,
+                                                        fontWeight: 600,
+                                                        letterSpacing: '0.02em',
+                                                        borderRadius: 6,
+                                                    }}
+                                                >
+                                                    From your photo
+                                                </Tag>
+                                            )}
+                                        </span>
+                                    }
+                                >
+                                    {describingImage ? (
+                                        <div
+                                            className="product-modal-line3-skeleton-wrap"
+                                            style={{
+                                                padding: '12px 14px',
+                                                borderRadius: 8,
+                                                border: '1px solid rgba(128, 0, 0, 0.12)',
+                                                background:
+                                                    'linear-gradient(165deg, rgba(255, 245, 238, 0.9) 0%, #fafafa 55%, #fff 100%)',
+                                                minHeight: 92,
+                                            }}
+                                        >
+                                            <Skeleton
+                                                active
+                                                title={false}
+                                                paragraph={{
+                                                    rows: 4,
+                                                    width: ['100%', '96%', '88%', '62%'],
                                                 }}
-                                            >
-                                                From your photo
-                                            </Tag>
-                                        )}
-                                    </span>
-                                }
-                            >
-                                {describingImage ? (
-                                    <div
-                                        className="product-modal-line3-skeleton-wrap"
-                                        style={{
-                                            padding: '12px 14px',
-                                            borderRadius: 8,
-                                            border: '1px solid rgba(128, 0, 0, 0.12)',
-                                            background:
-                                                'linear-gradient(165deg, rgba(255, 245, 238, 0.9) 0%, #fafafa 55%, #fff 100%)',
-                                            minHeight: 92,
-                                        }}
-                                    >
-                                        <Skeleton
-                                            active
-                                            title={false}
-                                            paragraph={{
-                                                rows: 4,
-                                                width: ['100%', '96%', '88%', '62%'],
+                                            />
+                                        </div>
+                                    ) : (
+                                        <Input.TextArea
+                                            placeholder="More information"
+                                            autoSize={{ minRows: 2, maxRows: 8 }}
+                                            size="large"
+                                            style={{
+                                                borderRadius: '8px',
+                                                transition:
+                                                    'border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease',
+                                                ...(line3AiPulse
+                                                    ? {
+                                                        animation:
+                                                            'productModalLine3AiIn 1.35s ease-out 1',
+                                                    }
+                                                    : {}),
+                                                ...(line3AiHint
+                                                    ? {
+                                                        borderColor: 'rgba(128, 0, 0, 0.35)',
+                                                        background:
+                                                            'linear-gradient(180deg, rgba(255, 248, 240, 0.65) 0%, #fff 100%)',
+                                                        boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+                                                    }
+                                                    : {}),
                                             }}
                                         />
-                                    </div>
-                                ) : (
-                                    <Input.TextArea
-                                        placeholder="More information"
-                                        autoSize={{ minRows: 2, maxRows: 8 }}
+                                    )}
+                                </Form.Item>
+                            </div>
+
+                            <Form.Item style={{ marginBottom: 0, marginTop: 32 }}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                                    <Button
+                                        onClick={handleCloseModal}
                                         size="large"
+                                        disabled={uploading}
                                         style={{
                                             borderRadius: '8px',
-                                            transition:
-                                                'border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease',
-                                            ...(line3AiPulse
-                                                ? {
-                                                      animation:
-                                                          'productModalLine3AiIn 1.35s ease-out 1',
-                                                  }
-                                                : {}),
-                                            ...(line3AiHint
-                                                ? {
-                                                      borderColor: 'rgba(128, 0, 0, 0.35)',
-                                                      background:
-                                                          'linear-gradient(180deg, rgba(255, 248, 240, 0.65) 0%, #fff 100%)',
-                                                      boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-                                                  }
-                                                : {}),
+                                            padding: '0 24px',
                                         }}
-                                    />
-                                )}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        loading={uploading}
+                                        size="large"
+                                        style={{
+                                            background: '#800000',
+                                            borderColor: '#800000',
+                                            borderRadius: '8px',
+                                            padding: '0 24px',
+                                            fontWeight: 500,
+                                        }}
+                                    >
+                                        {editingProduct ? 'Update Product' : 'Create Product'}
+                                    </Button>
+                                </div>
                             </Form.Item>
+                        </Form>
+
+                        <div style={{
+                            position: 'sticky',
+                            top: 0,
+                            height: 'fit-content'
+                        }}>
+                            <ProductPreview
+                                name={formValues.name || 'Product Name'}
+                                price={formValues.price || 0}
+                                line1={formValues.line1}
+                                line2={formValues.line2}
+                                line3={formValues.line3}
+                                imageUrls={previewImageUrls}
+                            />
                         </div>
-
-                        <Form.Item style={{ marginBottom: 0, marginTop: 32 }}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                                <Button
-                                    onClick={handleCloseModal}
-                                    size="large"
-                                    disabled={uploading}
-                                    style={{
-                                        borderRadius: '8px',
-                                        padding: '0 24px',
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={uploading}
-                                    size="large"
-                                    style={{
-                                        background: '#800000',
-                                        borderColor: '#800000',
-                                        borderRadius: '8px',
-                                        padding: '0 24px',
-                                        fontWeight: 500,
-                                    }}
-                                >
-                                    {editingProduct ? 'Update Product' : 'Create Product'}
-                                </Button>
-                            </div>
-                        </Form.Item>
-                    </Form>
-
-                    <div style={{
-                        position: 'sticky',
-                        top: 0,
-                        height: 'fit-content'
-                    }}>
-                        <ProductPreview
-                            name={formValues.name || 'Product Name'}
-                            price={formValues.price || 0}
-                            line1={formValues.line1}
-                            line2={formValues.line2}
-                            line3={formValues.line3}
-                            imageUrls={previewImageUrls}
-                        />
                     </div>
-                </div>
                 </Spin>
             </Modal>
             <style>{`
