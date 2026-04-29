@@ -37,14 +37,14 @@ export class MessageBuilder {
         };
     }
 
-    static getStoreLink(to: string, businessSlug: string, categorySlug?: string) {
+    static getStoreLink(to: string, businessSlug: string, categorySlug: string, categoryId: string) {
         const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         let url = `${baseUrl}/store/${businessSlug}`;
         let text = `Visit our store to view products:`;
 
         if (categorySlug) {
             url += `?category=${categorySlug}`;
-            text = `Click below to view the *${categorySlug}* collection:`;
+            text = `Click below to view the *${categoryId}* collection:`;
         }
 
         return {

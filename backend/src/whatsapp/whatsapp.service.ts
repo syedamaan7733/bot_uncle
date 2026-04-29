@@ -126,6 +126,7 @@ export class WhatsappService {
     const payload = MessageBuilder.getStoreLink(
       to,
       business.slug,
+      category.slug,
       category.id,
     );
     await this.sendMessage(to, business, payload);
