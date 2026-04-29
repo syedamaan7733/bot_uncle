@@ -43,7 +43,7 @@ export class MessageBuilder {
         let text = `Visit our store to view products:`;
 
         if (categorySlug) {
-            url += `?category=${categoryId}`;
+            url += `?categoryId=${categoryId}`;
             text = `Click below to view the *${categorySlug}* collection:`;
         }
 
