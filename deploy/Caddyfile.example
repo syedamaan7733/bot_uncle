@@ -1,7 +1,0 @@
-# Copy to Caddyfile. IP-only: HTTP on port 80 → Nest (CloudFront #2 terminates HTTPS for browsers).
-
-:80 {
-	reverse_proxy backend:3000
-}
-
-# Optional later: TLS on EC2 only if you attach a hostname (Let's Encrypt). Not used for raw-IP APIs.

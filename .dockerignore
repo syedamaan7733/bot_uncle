@@ -1,9 +1,0 @@
-.git
-.github
-**/.env
-**/.env.*
-**/node_modules
-frontend
-smart-import-service
-*.md
-.DS_Store

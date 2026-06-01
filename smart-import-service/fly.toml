@@ -1,0 +1,17 @@
+app = 'bot-uncle-smart-import'
+primary_region = 'iad'
+
+[build]
+
+[processes]
+  app = 'uvicorn app.main:app --host :: --port 8000'
+
+[env]
+  PYTHONUNBUFFERED = '1'
+  PORT = '8000'
+  LAYOUT_WARMUP = 'true'
+
+[[vm]]
+  memory = '4gb'
+  cpu_kind = 'shared'
+  cpus = 2
