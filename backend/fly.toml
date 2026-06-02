@@ -3,10 +3,11 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'bot-uncle'
+app = 'botuncle-backend'
 primary_region = 'ams'
 
 [build]
+  dockerfile = 'Dockerfile'
 
 [deploy]
   release_command = 'npm run prisma:migrate:deploy'
@@ -18,7 +19,8 @@ primary_region = 'ams'
   NODE_ENV = 'production'
   PORT = '3000'
   TRUST_PROXY = '1'
-  PYTHON_SERVICE_URL = 'http://bot-uncle-smart-import.internal:8000'
+  FRONTEND_URL = 'https://botuncle.fly.dev'
+  PYTHON_SERVICE_URL = 'http://smart-import.internal:8000'
 
 [http_service]
   internal_port = 3000

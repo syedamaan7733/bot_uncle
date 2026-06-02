@@ -3,7 +3,7 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'bot-uncle-ddg1aa'
+app = 'botuncle'
 primary_region = 'ams'
 
 [build]
