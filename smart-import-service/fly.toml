@@ -10,7 +10,7 @@ primary_region = 'iad'
 [env]
   PYTHONUNBUFFERED = '1'
   PORT = '8000'
-  LAYOUT_WARMUP = 'true'
+  LAYOUT_WARMUP = 'false'
 
 [http_service]
   internal_port = 8000
