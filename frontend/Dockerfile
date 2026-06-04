@@ -1,3 +1,3 @@
-FROM pierrezemb/gostatic
-COPY dist/ /srv/http/
-CMD ["-port","8080","-https-promote", "-enable-logging"]
+FROM nginx:alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY dist/ /usr/share/nginx/html/
